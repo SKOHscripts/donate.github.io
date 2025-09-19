@@ -1,50 +1,129 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Bitcoin Payment</title>
+  <style>
+    body {
+      background: linear-gradient(108deg, #fff 0%, #f7931a23 100%);
+      font-family: "Inter", -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      color: #181a20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 4px 32px #0002;
+      padding: 36px 20px 32px 20px;
+      width: 340px;
+      max-width: 96vw;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .btc-icon {
+      font-size: 3.5rem;
+      color: #f7931a;
+      filter: drop-shadow(0 2px 15px #f7931a45);
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin: 0 0 7px 0;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      color: #878e98;
+      margin-bottom: 24px;
+      font-size: 1rem;
+    }
+    #qrcode {
+      background: #f6f8fa;
+      border-radius: 15px;
+      padding: 16px;
+      margin: 10px 0 20px 0;
+      box-shadow: 0 0px 10px #f7931a18;
+    }
+    .payuri {
+      margin: 0;
+      font-size: .85rem;
+      word-break: break-all;
+      background: #f6f8fa;
+      border-radius: 6px;
+      padding: 5px 9px;
+      color: #878e98;
+      user-select: all;
+      cursor: pointer;
+    }
+    @media (max-width: 480px) {
+      .card {
+        padding: 18px 2vw 16px 2vw;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div id="qrcode-section" style="display:none; text-align:center; padding:20px;">
-    <h3>Paiement Bitcoin</h3>
-    <p>Scannez ce QR code avec votre wallet :</p>
-    <img id="qrcode-img" style="max-width:300px; margin:20px;" alt="QR Code Bitcoin"/>
-    <p style="font-size:12px; word-break:break-all; max-width:400px; margin:0 auto;">
-      <strong>URI:</strong> <span id="uri-text"></span>
-    </p>
+  <div class="card">
+    <div class="btc-icon">₿</div>
+    <h1 id="title">Bitcoin Payment</h1>
+    <div class="subtitle" id="subtitle">Scan this QR with your wallet</div>
+    <div id="qrcode"></div>
+    <div class="payuri" id="uri"></div>
   </div>
-
   <script>
-    const bitcoinUri = "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq";
-    
-    // Tentative de redirection
-    try {
-      window.location.href = bitcoinUri;
-    } catch(e) {
-      console.log("Redirection failed:", e);
-    }
-    
-    // Fonction pour afficher le QR code
-    function showQRCode() {
-      // Créer l'URL de l'API QR
-      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(bitcoinUri)}`;
-      
-      // Afficher le QR code
-      document.getElementById('qrcode-img').src = qrApiUrl;
-      document.getElementById('uri-text').textContent = bitcoinUri;
-      document.getElementById('qrcode-section').style.display = 'block';
-      
-      console.log("QR Code affiché avec succès");
-    }
-    
-    // Afficher le QR après délai
-    setTimeout(showQRCode, 1000);
-    
-    // Gestion du retour navigateur
-    window.addEventListener('pageshow', function(event) {
-      if (event.persisted) {
-        showQRCode();
+    // Texte multilingue
+    const texts = {
+      en: {
+        title: "Bitcoin Payment",
+        subtitle: "Scan this QR with your wallet",
+        copied: "Copied!",
+        uri: "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq"
+      },
+      fr: {
+        title: "Paiement Bitcoin",
+        subtitle: "Scannez ce QR avec votre wallet",
+        copied: "Copié !",
+        uri: "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq"
+      },
+      es: {
+        title: "Pago Bitcoin",
+        subtitle: "Escanea este QR con tu wallet",
+        copied: "¡Copiado!",
+        uri: "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq"
+      },
+      de: {
+        title: "Bitcoin-Zahlung",
+        subtitle: "Scannen Sie diesen QR-Code mit Ihrer Wallet",
+        copied: "Kopiert!",
+        uri: "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq"
       }
+      // Ajoutez d'autres langues si nécessaire
+    };
+    // Détection automatique de la langue [58][73][76]
+    function detectLang() {
+      let l = (navigator.language || navigator.userLanguage || "en").slice(0,2).toLowerCase();
+      return (l in texts) ? l : "en";
+    }
+    const lang = detectLang();
+    // Application des textes dans la page
+    document.getElementById("title").textContent = texts[lang].title;
+    document.getElementById("subtitle").textContent = texts[lang].subtitle;
+    document.getElementById("uri").textContent = texts[lang].uri;
+    // QR code visuel API [41][46]
+    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(texts[lang].uri)}&size=220x220&margin=12`;
+    document.getElementById("qrcode").innerHTML = `<img src="${qrApi}" alt="Bitcoin QR Code" width="220" height="220">`;
+    // Copier le texte à l'appui [UX]
+    document.getElementById("uri").addEventListener("click", function() {
+      navigator.clipboard.writeText(texts[lang].uri);
+      this.textContent = texts[lang].copied;
+      setTimeout(() => this.textContent = texts[lang].uri, 1200);
     });
   </script>
 </body>
