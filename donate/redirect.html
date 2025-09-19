@@ -335,11 +335,11 @@
       } catch(error) {
         console.error("QR generation failed:", error);
         // Fallback vers API alternative si la génération locale échoue
-        const qrApi = `https://api.goqr.me/qr?data=${encodeURIComponent(texts.uri)}&size=250x250&format=png`;
-        document.getElementById("qrcode").innerHTML = `<img src="${qrApi}" alt="Bitcoin QR Code" width="250" height="250" style="border-radius: 10px;">`;
+        const qrApi = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(texts[lang].uri)}&size=220x220&margin=12`;
+        document.getElementById("qrcode").innerHTML = `<img src="${qrApi}" alt="Bitcoin QR Code" width="220" height="220">`;
       }
     }
-
+    
     // Générer le QR code
     generateLocalQR();
 
