@@ -1,43 +1,51 @@
-<div id="qrcode-section" style="display:none;">
-  <p>Scannez ce QR code dans votre application Bitcoin :</p>
-  <div id="qrcode"></div>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Bitcoin Payment</title>
+</head>
+<body>
+  <div id="qrcode-section" style="display:none; text-align:center; padding:20px;">
+    <h3>Paiement Bitcoin</h3>
+    <p>Scannez ce QR code avec votre wallet :</p>
+    <img id="qrcode-img" style="max-width:300px; margin:20px;" alt="QR Code Bitcoin"/>
+    <p style="font-size:12px; word-break:break-all; max-width:400px; margin:0 auto;">
+      <strong>URI:</strong> <span id="uri-text"></span>
+    </p>
+  </div>
 
-<script src="qrcode.min.js"></script>
-<script>
-const bitcoinUri = "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq";
-
-// Tentative de redirection
-window.location.href = bitcoinUri;
-
-// Fonction pour afficher le QR code
-function showQRCode() {
-  const qrSection = document.getElementById('qrcode-section');
-  const qrDiv = document.getElementById('qrcode');
-  
-  qrSection.style.display = 'block';
-  
-  // Vider le div avant de créer le QR code
-  qrDiv.innerHTML = '';
-  
-  // Créer le QR code
-  new QRCode(qrDiv, {
-    text: bitcoinUri,
-    width: 256,
-    height: 256,
-    colorDark: "#000000",
-    colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.H
-  });
-}
-
-// Afficher le QR code après un délai
-setTimeout(showQRCode, 1000);
-
-// Gestion du bouton retour
-window.addEventListener('pageshow', function(event) {
-  if (event.persisted) {
-    showQRCode();
-  }
-});
-</script>
+  <script>
+    const bitcoinUri = "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq";
+    
+    // Tentative de redirection
+    try {
+      window.location.href = bitcoinUri;
+    } catch(e) {
+      console.log("Redirection failed:", e);
+    }
+    
+    // Fonction pour afficher le QR code
+    function showQRCode() {
+      // Créer l'URL de l'API QR
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(bitcoinUri)}`;
+      
+      // Afficher le QR code
+      document.getElementById('qrcode-img').src = qrApiUrl;
+      document.getElementById('uri-text').textContent = bitcoinUri;
+      document.getElementById('qrcode-section').style.display = 'block';
+      
+      console.log("QR Code affiché avec succès");
+    }
+    
+    // Afficher le QR après délai
+    setTimeout(showQRCode, 1000);
+    
+    // Gestion du retour navigateur
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted) {
+        showQRCode();
+      }
+    });
+  </script>
+</body>
+</html>
