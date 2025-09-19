@@ -122,43 +122,40 @@
       box-shadow: 0 0 10px rgba(247, 147, 26, 0.5);
     }
 
-    .wallet-btn, .btc-link, .ln-link {
+    .btn {
       display: inline-block;
-      margin-top: 10px;
-      padding: 10px 18px;
+      margin: 8px 5px;
+      padding: 10px 20px;
       border-radius: 8px;
       text-decoration: none;
       font-weight: 600;
+      font-size: 0.95rem;
       transition: all 0.3s ease;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
-    }
-
-    .wallet-btn {
-      background: linear-gradient(145deg, #f7931a, #ffb347);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
       color: #121212;
+      background: #f7931a;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     }
 
-    .wallet-btn:hover {
-      background: linear-gradient(145deg, #ffb347, #f7931a);
-      box-shadow: 0 0 12px rgba(247, 147, 26, 0.7);
+    .btn::after {
+      content: "";
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: rgba(255,255,255,0.15);
+      transition: all 0.4s ease;
+      transform: skewX(-20deg);
     }
 
-    .btc-link {
-      background: linear-gradient(145deg, #f7931a, #ffb347);
-      color: #121212;
+    .btn:hover::after {
+      left: 100%;
     }
 
-    .btc-link:hover {
-      background: linear-gradient(145deg, #ffb347, #f7931a);
-    }
-
-    .ln-link {
-      background: linear-gradient(145deg, #ff8c00, #ffa500);
-      color: #121212;
-    }
-
-    .ln-link:hover {
-      background: linear-gradient(145deg, #ffa500, #ff8c00);
+    .btn:hover {
+      background: #ffb347;
+      box-shadow: 0 0 12px rgba(247,147,26,0.7);
     }
 
     .donation-message {
@@ -179,14 +176,8 @@
     }
 
     @media (max-width: 480px) {
-      .card {
-        padding: 25px 15px;
-        margin: 20px 10px;
-      }
-
-      h1 {
-        font-size: 1.5rem;
-      }
+      .card { padding: 25px 15px; margin: 20px 10px; }
+      h1 { font-size: 1.5rem; }
     }
   </style>
 </head>
@@ -198,42 +189,45 @@
         <span style="font-size: 1.5rem; color: #aaa;">+</span>
         <span class="btc-icon">₿</span>
       </div>
-      <h1 id="title">Buy me a Bitcoffee</h1>
-      <div class="subtitle" id="subtitle">Fuel my coding sessions with crypto ☕</div>
+      <h1 id="title"></h1>
+      <div class="subtitle" id="subtitle"></div>
 
       <div class="dev-info">
-        <span id="dev-message">Supporting open source development</span>
+        <span id="dev-message"></span>
       </div>
 
       <div id="qrcode"></div>
       <div class="payuri" id="uri" title="Click to copy"></div>
 
-      <a href="#" id="walletBtn" class="wallet-btn">⚡ Open in Wallet</a>
+      <a href="#" id="walletBtn" class="btn">⚡ Open in Wallet</a>
 
       <div class="donation-message">
         <span class="heart">❤️</span>
-        <span id="thanks-message">Every satoshi helps keep the code flowing!</span>
+        <span id="thanks-message"></span>
         <span class="heart">❤️</span>
       </div>
 
-      <a href="https://bitcoin.org" target="_blank" class="btc-link">Bitcoin.org</a><br>
-      <a href="https://lightning.network" target="_blank" class="ln-link">Lightning Network</a>
+      <a href="https://bitcoin.org" target="_blank" class="btn">Bitcoin.org</a>
+      <a href="https://lightning.network" target="_blank" class="btn">Lightning Network</a>
     </div>
   </div>
 
   <script>
     const texts = {
       uri: "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq",
-      en: {
-        title: "Buy me a Bitcoffee",
-        subtitle: "Fuel my coding sessions with crypto ☕",
-        devMessage: "Supporting open source development",
-        thanksMessage: "Every satoshi helps keep the code flowing!",
-        copied: "Copied! ☕"
-      }
+      en: { title:"Buy me a Bitcoffee", subtitle:"Fuel my coding sessions with crypto ☕", devMessage:"Supporting open source development", thanksMessage:"Every satoshi helps keep the code flowing!", copied:"Copied! ☕" },
+      fr: { title:"Offrez-moi un Bitcoffee", subtitle:"Alimentez mes sessions de code avec de la crypto ☕", devMessage:"Soutenir le développement open source", thanksMessage:"Chaque satoshi aide à faire couler le code !", copied:"Copié ! ☕" },
+      es: { title:"Cómprame un Bitcoffee", subtitle:"Alimenta mis sesiones de código con crypto ☕", devMessage:"Apoyando el desarrollo de código abierto", thanksMessage:"¡Cada satoshi ayuda a mantener el código fluyendo!", copied:"¡Copiado! ☕" },
+      de: { title:"Kauf mir einen Bitcoffee", subtitle:"Füttere meine Coding-Sessions mit Crypto ☕", devMessage:"Open-Source-Entwicklung unterstützen", thanksMessage:"Jeder Satoshi hilft, den Code am Laufen zu halten!", copied:"Kopiert! ☕" },
+      it: { title:"Comprami un Bitcoffee", subtitle:"Alimenta le mie sessioni di coding con crypto ☕", devMessage:"Supportare lo sviluppo open source", thanksMessage:"Ogni satoshi aiuta a mantenere il codice che scorre!", copied:"Copiato! ☕" },
+      pt: { title:"Me compre um Bitcoffee", subtitle:"Alimente minhas sessões de código com crypto ☕", devMessage:"Apoiando o desenvolvimento open source", thanksMessage:"Cada satoshi ajuda a manter o código fluindo!", copied:"Copiado! ☕" }
     };
 
-    const lang = 'en';
+    function detectLang() {
+      let l = (navigator.language || navigator.userLanguage || "en").slice(0,2).toLowerCase();
+      return (l in texts) ? l : "en";
+    }
+    const lang = detectLang();
 
     document.getElementById("title").textContent = texts[lang].title;
     document.getElementById("subtitle").textContent = texts[lang].subtitle;
@@ -246,34 +240,30 @@
         const qr = qrcode(0, 'M');
         qr.addData(texts.uri);
         qr.make();
-        const qrImg = qr.createDataURL(6, 12);
+        const qrImg = qr.createDataURL(6,12);
         document.getElementById("qrcode").innerHTML = `<img src="${qrImg}" alt="Bitcoin QR Code">`;
-      } catch (error) {
+      } catch (e) {
         document.getElementById("qrcode").innerHTML = `<div style="color:red;">Erreur QR</div>`;
       }
     }
-
     generateLocalQR();
     document.addEventListener('DOMContentLoaded', generateLocalQR);
 
-    document.getElementById("uri").addEventListener("click", function() {
-      navigator.clipboard.writeText(texts.uri).then(() => {
+    document.getElementById("uri").addEventListener("click", function(){
+      navigator.clipboard.writeText(texts.uri).then(()=>{
         this.textContent = texts[lang].copied;
         this.style.background = "#222";
-        setTimeout(() => {
-          this.textContent = texts.uri;
-          this.style.background = "#222";
-        }, 2000);
+        setTimeout(()=>{ this.textContent = texts.uri; this.style.background="#222"; },2000);
       });
     });
 
-    document.getElementById("walletBtn").addEventListener("click", function(e) {
+    document.getElementById("walletBtn").addEventListener("click", function(e){
       e.preventDefault();
       window.location.href = texts.uri;
     });
 
-    window.addEventListener('pageshow', function(event) {
-      if (event.persisted) generateLocalQR();
+    window.addEventListener('pageshow', function(event){
+      if(event.persisted) generateLocalQR();
     });
   </script>
 </body>
