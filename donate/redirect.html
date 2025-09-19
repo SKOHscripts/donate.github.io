@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Buy me a Bitcoffee</title>
   <!-- Ajout de la bibliothèque QR locale -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
   <style>
-
     body {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
       font-family: 'Poppins', sans-serif;
@@ -154,6 +153,12 @@
       z-index: -1;
     }
 
+    #qrcode img {
+      border-radius: 10px;
+      max-width: 250px;
+      height: auto;
+    }
+
     .payuri {
       margin: 0;
       font-size: 0.8rem;
@@ -297,18 +302,11 @@
     };
 
     function detectLang() {
-      let l = (navigator.language || navigator.userLanguage || "en").slice(0,2).toLowerCase();
+      let l = (navigator.language || navigator.userLanguage || "en").slice(0, 2).toLowerCase();
       return (l in texts) ? l : "en";
     }
 
     const lang = detectLang();
-
-    // Redirection automatique vers wallet Bitcoin
-    <!--try {                                   -->
-    <!--  window.location.href = texts.uri;     -->
-    <!--} catch(e) {                            -->
-    <!--  console.log("Redirection failed:", e);-->
-    <!--}                                       -->
 
     // Application des textes
     document.getElementById("title").textContent = texts[lang].title;
@@ -317,32 +315,27 @@
     document.getElementById("thanks-message").textContent = texts[lang].thanksMessage;
     document.getElementById("uri").textContent = texts.uri;
 
-    // Génération QR locale (pas d'API externe)[99][104]
+    // Génération QR avec QRCode.js
     function generateLocalQR() {
       try {
-        const qr = qrcode(0, 'M'); // Type 0, niveau de correction M
+        const qr = qrcode(0, 'M'); // version auto, correction M
         qr.addData(texts.uri);
         qr.make();
 
-        // Créer l'image avec style personnalisé
-        const qrImg = qr.createImgTag(4, 8); // cellSize=4, margin=8
-        document.getElementById("qrcode").innerHTML = qrImg;
-
-        // Styling de l'image générée
-        const img = document.querySelector('#qrcode img');
-        img.style.borderRadius = '10px';
-        img.style.maxWidth = '250px';
-        img.style.height = 'auto';
-      } catch(error) {
+        // insertion en base64 (pas d’appel réseau externe)
+        const qrImg = qr.createDataURL(4, 8);
+        document.getElementById("qrcode").innerHTML = `<img src="${qrImg}" alt="Bitcoin QR Code" style="border-radius: 10px; max-width: 250px; height: auto;">`;
+      } catch (error) {
         console.error("QR generation failed:", error);
-        // Fallback vers API alternative si la génération locale échoue
-        const qrApi = `https://api.goqr.me/qr?data=${encodeURIComponent(texts.uri)}&size=250x250&format=png`;
-        document.getElementById("qrcode").innerHTML = `<img src="${qrApi}" alt="Bitcoin QR Code" width="250" height="250" style="border-radius: 10px;">`;
+        document.getElementById("qrcode").innerHTML = `<div style="color:red;">Erreur lors de la génération du QR code</div>`;
       }
     }
-
+    
     // Générer le QR code
     generateLocalQR();
+
+    // Générer le QR code après chargement du DOM
+    document.addEventListener('DOMContentLoaded', generateQRCode);
 
     // Copier l'URI au clic
     document.getElementById("uri").addEventListener("click", function() {
@@ -354,11 +347,13 @@
           this.style.background = "rgba(108, 117, 125, 0.1)";
         }, 2000);
       }).catch(() => {
+        // Fallback pour navigateurs plus anciens
         this.textContent = texts[lang].copied;
         setTimeout(() => this.textContent = texts.uri, 2000);
       });
     });
 
+    // Gestion du retour navigateur
     window.addEventListener('pageshow', function(event) {
       if (event.persisted) {
         generateLocalQR();
