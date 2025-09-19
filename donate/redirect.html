@@ -346,7 +346,7 @@
     generateLocalQR();
 
     // Générer le QR code après chargement du DOM
-    document.addEventListener('DOMContentLoaded', generateQRCode);
+    document.addEventListener('DOMContentLoaded', generateLocalQR);
 
     // Copier l'URI au clic
     document.getElementById("uri").addEventListener("click", function() {
