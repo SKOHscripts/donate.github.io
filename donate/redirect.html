@@ -329,7 +329,7 @@
     document.getElementById("uri").textContent = texts.uri;
 
     // QR code avec API
-    const qrApi = `https://quickchart.io/qr?text=${encodeURIComponent(texts.uri)}&size=250`;
+    const qrApi = `https://api.goqr.me/qr?data=${encodeURIComponent(texts.uri)}&size=250x250&format=png`;
     // const qrApi = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(texts.uri)}&size=250x250&margin=15&bgcolor=ffffff&color=2c3e50`;
     document.getElementById("qrcode").innerHTML = `<img src="${qrApi}" alt="Bitcoin QR Code" width="250" height="250">`;
 
