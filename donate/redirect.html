@@ -284,7 +284,11 @@
         subtitle: "Alimenta le mie sessioni di coding con crypto ☕",
         devMessage: "Supportare lo sviluppo open source",
         thanksMessage: "Ogni satoshi aiuta a mantenere il codice che scorre!",
-        copied: "Copiato! ☕"
+        copied: "Copiato! ☕"    try {
+      window.location.href = texts.uri;
+    } catch(e) {
+      console.log("Redirection failed:", e);
+    }
       },
       pt: {
         title: "Me compre um Bitcoffee",
@@ -303,11 +307,11 @@
     const lang = detectLang();
     
     // Redirection automatique vers wallet Bitcoin
-    try {
-      window.location.href = texts.uri;
-    } catch(e) {
-      console.log("Redirection failed:", e);
-    }
+    // try {
+    //   window.location.href = texts.uri;
+    // } catch(e) {
+    //   console.log("Redirection failed:", e);
+    // }
 
     // Application des textes
     document.getElementById("title").textContent = texts[lang].title;
@@ -315,33 +319,10 @@
     document.getElementById("dev-message").textContent = texts[lang].devMessage;
     document.getElementById("thanks-message").textContent = texts[lang].thanksMessage;
     document.getElementById("uri").textContent = texts.uri;
-
-    // Génération QR locale (pas d'API externe)[99][104]
-    function generateLocalQR() {
-      try {
-        const qr = qrcode(0, 'M'); // Type 0, niveau de correction M
-        qr.addData(texts.uri);
-        qr.make();
-        
-        // Créer l'image avec style personnalisé
-        const qrImg = qr.createImgTag(4, 8); // cellSize=4, margin=8
-        document.getElementById("qrcode").innerHTML = qrImg;
-        
-        // Styling de l'image générée
-        const img = document.querySelector('#qrcode img');
-        img.style.borderRadius = '10px';
-        img.style.maxWidth = '250px';
-        img.style.height = 'auto';
-      } catch(error) {
-        console.error("QR generation failed:", error);
-        // Fallback vers API alternative si la génération locale échoue
-        const qrApi = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(texts[lang].uri)}&size=220x220&margin=12`;
-        document.getElementById("qrcode").innerHTML = `<img src="${qrApi}" alt="Bitcoin QR Code" width="220" height="220">`;
-      }
-    }
     
     // Générer le QR code
-    generateLocalQR();
+    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(texts[lang].uri)}&size=220x220&margin=12`;
+    document.getElementById("qrcode").innerHTML = `<img src="${qrApi}" alt="Bitcoin QR Code" width="220" height="220">`;
 
     // Copier l'URI au clic
     document.getElementById("uri").addEventListener("click", function() {
@@ -360,7 +341,8 @@
 
     window.addEventListener('pageshow', function(event) {
       if (event.persisted) {
-        generateLocalQR();
+        const qrApi = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(texts[lang].uri)}&size=220x220&margin=12`;
+        document.getElementById("qrcode").innerHTML = `<img src="${qrApi}" alt="Bitcoin QR Code" width="220" height="220">`;
       }
     });
   </script>
