@@ -1,4 +1,32 @@
 <script>
-window.location.href = "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq";
 history.back();
+</script>
+<div id="qrcode-section" style="display:none;">
+  <p>Scannez ce QR code dans votre application Bitcoin :</p>
+  <canvas id="qrcode"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+<script>
+const bitcoinUri = "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq";
+
+  let isRedirected = false;
+
+// Tentative de redirection
+window.location.href = bitcoinUri;
+
+// Affiche le QR code si retour ou si la redirection échoue
+setTimeout(() => {
+  if (!isRedirected) {
+    document.getElementById('qrcode-section').style.display = 'block';
+    QRCode.toCanvas(document.getElementById('qrcode'), bitcoinUri);
+  }
+}, 800);
+
+// Optionnel : cliquer sur "Retour" affiche aussi le QR code (améliore UX desktop)
+window.onpageshow = function(event) {
+  if (event.persisted || (window.performance && window.performance.navigation.type == 2)) {
+    document.getElementById('qrcode-section').style.display = 'block';
+    QRCode.toCanvas(document.getElementById('qrcode'), bitcoinUri);
+  }
+};
 </script>
