@@ -80,29 +80,26 @@
   <script>
     // Texte multilingue
     const texts = {
+      uri: "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq",
       en: {
         title: "Bitcoin Payment",
         subtitle: "Scan this QR with your wallet",
         copied: "Copied!",
-        uri: "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq"
       },
       fr: {
         title: "Paiement Bitcoin",
         subtitle: "Scannez ce QR avec votre wallet",
         copied: "Copié !",
-        uri: "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq"
       },
       es: {
         title: "Pago Bitcoin",
         subtitle: "Escanea este QR con tu wallet",
         copied: "¡Copiado!",
-        uri: "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq"
       },
       de: {
         title: "Bitcoin-Zahlung",
         subtitle: "Scannen Sie diesen QR-Code mit Ihrer Wallet",
         copied: "Kopiert!",
-        uri: "bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq"
       }
       // Ajoutez d'autres langues si nécessaire
     };
@@ -115,15 +112,15 @@
     // Application des textes dans la page
     document.getElementById("title").textContent = texts[lang].title;
     document.getElementById("subtitle").textContent = texts[lang].subtitle;
-    document.getElementById("uri").textContent = texts[lang].uri;
+    document.getElementById("uri").textContent = texts.uri;
     // QR code visuel API [41][46]
-    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(texts[lang].uri)}&size=220x220&margin=12`;
+    const qrApi = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(texts.uri)}&size=220x220&margin=12`;
     document.getElementById("qrcode").innerHTML = `<img src="${qrApi}" alt="Bitcoin QR Code" width="220" height="220">`;
     // Copier le texte à l'appui [UX]
     document.getElementById("uri").addEventListener("click", function() {
-      navigator.clipboard.writeText(texts[lang].uri);
+      navigator.clipboard.writeText(texts.uri);
       this.textContent = texts[lang].copied;
-      setTimeout(() => this.textContent = texts[lang].uri, 1200);
+      setTimeout(() => this.textContent = texts.uri, 1200);
     });
   </script>
 </body>
