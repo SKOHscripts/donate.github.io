@@ -328,10 +328,32 @@
     document.getElementById("thanks-message").textContent = texts[lang].thanksMessage;
     document.getElementById("uri").textContent = texts.uri;
 
-    // QR code avec API
-    const qrApi = `https://api.goqr.me/qr?data=${encodeURIComponent(texts.uri)}&size=250x250&format=png`;
-    // const qrApi = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(texts.uri)}&size=250x250&margin=15&bgcolor=ffffff&color=2c3e50`;
-    document.getElementById("qrcode").innerHTML = `<img src="${qrApi}" alt="Bitcoin QR Code" width="250" height="250">`;
+    // Génération QR locale (pas d'API externe)[99][104]
+    function generateLocalQR() {
+      try {
+        const qr = qrcode(0, 'M'); // Type 0, niveau de correction M
+        qr.addData(texts.uri);
+        qr.make();
+        
+        // Créer l'image avec style personnalisé
+        const qrImg = qr.createImgTag(4, 8); // cellSize=4, margin=8
+        document.getElementById("qrcode").innerHTML = qrImg;
+        
+        // Styling de l'image générée
+        const img = document.querySelector('#qrcode img');
+        img.style.borderRadius = '10px';
+        img.style.maxWidth = '250px';
+        img.style.height = 'auto';
+      } catch(error) {
+        console.error("QR generation failed:", error);
+        // Fallback vers API alternative si la génération locale échoue
+        const qrApi = `https://api.goqr.me/qr?data=${encodeURIComponent(texts.uri)}&size=250x250&format=png`;
+        document.getElementById("qrcode").innerHTML = `<img src="${qrApi}" alt="Bitcoin QR Code" width="250" height="250" style="border-radius: 10px;">`;
+      }
+    }
+
+    // Générer le QR code
+    generateLocalQR();
 
     // Copier l'URI au clic
     document.getElementById("uri").addEventListener("click", function() {
@@ -343,18 +365,17 @@
           this.style.background = "rgba(108, 117, 125, 0.1)";
         }, 2000);
       }).catch(() => {
-        // Fallback pour navigateurs plus anciens
         this.textContent = texts[lang].copied;
         setTimeout(() => this.textContent = texts.uri, 2000);
       });
     });
 
-    // Gestion du retour navigateur
     window.addEventListener('pageshow', function(event) {
       if (event.persisted) {
-        // La page QR est déjà affichée
+        generateLocalQR();
       }
     });
   </script>
 </body>
 </html>
+
