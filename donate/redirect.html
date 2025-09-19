@@ -5,20 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Buy me a Bitcoffee</title>
   <!-- Ajout de la bibliothèque QR locale -->
-  <script type="text/javascript" src="qrcode.js"></script>  
+  <script type="text/javascript" src="qrcode.js"></script>
   <style>
-    body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-      font-family: 'Poppins', sans-serif;
-      min-height: 100vh;
-      margin: 0;
-      color: #2c3e50;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    color: #2c3e50;
+    display: flex;
+    justify-content: center;
+    padding: 40px 15px;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
 
     .coffee-bg {
       position: absolute;
@@ -154,8 +153,14 @@
     }
 
     #qrcode img {
-      border-radius: 10px;
-      max-width: 250px;
+      display: block;
+      margin: 0 auto;
+      border-radius: 16px;
+      padding: 10px;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(247, 147, 26, 0.25);
+      max-width: 220px;
+      width: 80%;
       height: auto;
     }
 
@@ -318,19 +323,19 @@
     // Génération QR avec QRCode.js
     function generateLocalQR() {
       try {
-        const qr = qrcode(0, 'M'); // version auto, correction M
+        const qr = qrcode(0, 'M');
         qr.addData(texts.uri);
         qr.make();
 
-        // insertion en base64 (pas d’appel réseau externe)
-        const qrImg = qr.createDataURL(4, 8);
-        document.getElementById("qrcode").innerHTML = `<img src="${qrImg}" alt="Bitcoin QR Code" style="border-radius: 10px; max-width: 250px; height: auto;">`;
+        const qrImg = qr.createDataURL(6, 12);
+        document.getElementById("qrcode").innerHTML =
+          `<img src="${qrImg}" alt="Bitcoin QR Code">`;
       } catch (error) {
         console.error("QR generation failed:", error);
-        document.getElementById("qrcode").innerHTML = `<div style="color:red;">Erreur lors de la génération du QR code</div>`;
+        document.getElementById("qrcode").innerHTML = `<div style="color:red;">Erreur QR</div>`;
       }
     }
-    
+
     // Générer le QR code
     generateLocalQR();
 
