@@ -149,16 +149,18 @@
     .method-badge {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
-      background: rgba(247,147,26,0.08);
+      background: rgba(247,147,26,0.06);
       color: #f3b37a;
       border: 1px solid rgba(247,147,26,0.12);
-      padding: 6px 10px;
+      padding: 6px 8px;
       border-radius: 999px;
       font-size: 0.85rem;
-      min-width: 90px;
-      justify-content: center;
+      min-width: 44px;
+      height: 36px;
     }
+    .method-badge svg { display:block; width:20px; height:20px; }
 
     /* URI and actions */
     .uri-row { margin-top: 12px; display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; }
@@ -236,7 +238,7 @@
     /* small screens adapt + switcher placement */
     @media (max-width: 520px) {
       .qr-area { max-width: 260px; }
-      .method-badge { min-width: 72px; font-size: 0.8rem; padding: 5px 8px; }
+      .method-badge { min-width: 44px; font-size: 0.8rem; padding: 5px 6px; height:36px; }
       .arrow { width: 40px; height: 40px; font-size: 1.15rem; }
     }
   </style>
@@ -262,7 +264,7 @@
         <!-- switcher: left arrow, badge, right arrow -->
         <div class="switcher" aria-hidden="false">
           <div class="arrow" id="prevBtn" title="Previous method" role="button" aria-label="Previous method">‹</div>
-          <div class="method-badge" id="methodBadge" aria-live="polite">Bitcoin</div>
+          <div class="method-badge" id="methodBadge" aria-live="polite" aria-label="Payment method icon"></div>
           <div class="arrow" id="nextBtn" title="Next method" role="button" aria-label="Next method">›</div>
         </div>
 
@@ -295,7 +297,7 @@
        Edit this array to add/change supported addresses.
        Each entry should provide:
          - id: short id
-         - name: shown in badge
+         - name: shown in badge (used for aria)
          - address: raw address (for display)
          - uri: wallet URI used for QR / open-in-wallet / copy (string)
            * Bitcoin example: "bitcoin:1A1zP1..." or "bitcoin:?lno=..."
@@ -404,6 +406,48 @@
     thanksEl.textContent = texts[lang].thanksMessage;
     walletBtn.textContent = texts[lang].openWallet;
 
+    /* helper: return SVG string for each method id */
+    function getIconSVG(id) {
+      if (id === 'btc') {
+        return `
+          <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+            <title>Bitcoin</title>
+            <circle cx="16" cy="16" r="16" fill="#f7931a"/>
+            <text x="16" y="20.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
+              font-size="14" font-weight="700" fill="#fff">฿</text>
+          </svg>
+        `;
+      } else if (id === 'eth') {
+        return `
+          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+            <title>Ethereum</title>
+            <g transform="translate(0,0)">
+              <polygon points="32,6 12,34 32,26 52,34" fill="#3C3C3D"/>
+              <polygon points="32,58 12,34 32,46 52,34" fill="#8C8C8C"/>
+            </g>
+          </svg>
+        `;
+      } else if (id === 'sol') {
+        return `
+          <svg viewBox="0 0 64 32" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
+            <title>Solana</title>
+            <defs>
+              <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+                <stop offset="0" stop-color="#00FFA3"/>
+                <stop offset="1" stop-color="#DC1FFF"/>
+              </linearGradient>
+            </defs>
+            <g fill="url(#g)">
+              <rect x="2" y="2" rx="3" ry="3" width="46" height="8" transform="skewX(-20)" />
+              <rect x="6" y="12" rx="3" ry="3" width="46" height="8" transform="skewX(-20)" opacity="0.9" />
+              <rect x="10" y="22" rx="3" ry="3" width="46" height="8" transform="skewX(-20)" opacity="0.8" />
+            </g>
+          </svg>
+        `;
+      }
+      return '';
+    }
+
     /* safe-get method */
     function currentMethod() {
       return paymentMethods[currentIndex] || paymentMethods[0];
@@ -412,8 +456,10 @@
     /* update UI for selected method */
     function updateMethodUI() {
       const m = currentMethod();
-      // show badge + icon shorthand
-      methodBadgeEl.textContent = m.name;
+      // show badge as SVG (accessible)
+      const svg = getIconSVG(m.id) || '';
+      methodBadgeEl.innerHTML = svg;
+      methodBadgeEl.setAttribute('aria-label', m.name);
       // show the URI (for copy)
       uriEl.textContent = m.uri;
       uriEl.setAttribute('data-uri', m.uri);
@@ -421,8 +467,6 @@
       generateLocalQR(m.uri);
       // make wallet button open current uri
       walletBtn.setAttribute('data-uri', m.uri);
-      // minor accessibility
-      methodBadgeEl.setAttribute('aria-label', `Payment method: ${m.name}`);
     }
 
     /* QR generation (uses qrcode.js createDataURL) */
@@ -452,8 +496,8 @@
     }
 
     /* attach listeners */
-    prevBtn.addEventListener('click', prevMethod);
-    nextBtn.addEventListener('click', nextMethod);
+    document.getElementById('prevBtn').addEventListener('click', prevMethod);
+    document.getElementById('nextBtn').addEventListener('click', nextMethod);
 
     // keyboard support: left / right
     document.addEventListener('keydown', function(e){
@@ -479,7 +523,7 @@
     });
 
     // open in wallet (navigate to the URI)
-    walletBtn.addEventListener('click', function(e){
+    document.getElementById('walletBtn').addEventListener('click', function(e){
       e.preventDefault();
       const uri = this.getAttribute('data-uri') || (currentMethod() && currentMethod().uri);
       if (!uri) return;
