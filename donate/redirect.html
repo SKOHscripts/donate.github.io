@@ -316,7 +316,7 @@
     */
     const paymentMethods = [
       {
-        id: 'btc',
+        id: 'ln',
         name: 'Bitcoin Lightning',
         address: 'lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq', // optional display
         uri: 'bitcoin:?lno=lno1pg85yateypkk2grpyp3k7enxv4j3pmsrse80qf0aara4slvcjxrvu6j2rp5ftmjy4yntlsmsutpkvkt6878sx0ktfqdcpnruqp8akqzrnuahqalud0rxc9r89dkgfn79rnfxys0hqgpnx5tfhxdf82g437s2486w2xp4yzk96gm9zfs6a6wjs2cze9r9ulqqx0gy284nnu7xvt3qtwep34yvggslpqznxnej6u3xl77dpt9vs7exv7tgs3kqqq32z859j26p4c4xcw26cwvqy0vxv9d66zptw6s0g0kr3jhlujef6z793l38cdqe5ydy3fq5mhs0qqefpxfacl4kh5edmc4v3pdywndl8ctcj6xk96pxld7pdwlkl40zpwzgdamfsdtnrxxalsn8mdwfc3zqlytq'
@@ -427,39 +427,19 @@
     function getIconSVG(id) {
       if (id === 'btc') {
         return `
-          <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
-            <title>Bitcoin</title>
-            <circle cx="16" cy="16" r="16" fill="#f7931a"/>
-            <text x="16" y="20.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif"
-              font-size="14" font-weight="700" fill="#fff">฿</text>
-          </svg>
+          <img src="bitcoin.svg" alt="Bitcoin" width="24" height="24">
         `;
       } else if (id === 'eth') {
         return `
-          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
-            <title>Ethereum</title>
-            <g transform="translate(0,0)">
-              <polygon points="32,6 12,34 32,26 52,34" fill="#3C3C3D"/>
-              <polygon points="32,58 12,34 32,46 52,34" fill="#8C8C8C"/>
-            </g>
-          </svg>
+          <img src="ethereum.webp" alt="Ethereum" width="24" height="24">
         `;
       } else if (id === 'sol') {
         return `
-          <svg viewBox="0 0 64 32" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
-            <title>Solana</title>
-            <defs>
-              <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0" stop-color="#00FFA3"/>
-                <stop offset="1" stop-color="#DC1FFF"/>
-              </linearGradient>
-            </defs>
-            <g fill="url(#g)">
-              <rect x="2" y="2" rx="3" ry="3" width="46" height="8" transform="skewX(-20)" />
-              <rect x="6" y="12" rx="3" ry="3" width="46" height="8" transform="skewX(-20)" opacity="0.9" />
-              <rect x="10" y="22" rx="3" ry="3" width="46" height="8" transform="skewX(-20)" opacity="0.8" />
-            </g>
-          </svg>
+          <img src="solana.webp" alt="Solana" width="24" height="24">
+        `;
+      } else if (id === 'ln') {
+        return `
+        <img src="lightning.svg" alt="Lightning Network" width="40" height="40">
         `;
       }
       return '';
