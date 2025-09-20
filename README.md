@@ -18,7 +18,7 @@ Designed for developers and open-source enthusiasts to receive donations via Bit
 ## Live Demo
 
 Check out a working version here:
-[https://github.com/SKOHscripts/donate.github.io](https://github.com/SKOHscripts/donate.github.io)
+[https://html-preview.github.io/?url=https://github.com/SKOHscripts/donate.github.io/blob/main/donate%2Fredirect.html](https://html-preview.github.io/?url=https://github.com/SKOHscripts/donate.github.io/blob/main/donate%2Fredirect.html)
 
 ---
 
