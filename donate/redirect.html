@@ -159,6 +159,15 @@
       font-size: 0.85rem;
       min-width: 44px;
       height: 36px;
+
+      /* animation properties for fade+slide */
+      transition: opacity 180ms ease, transform 180ms ease;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .method-badge.fading {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
     }
     .method-badge svg { display:block; width:20px; height:20px; }
 
@@ -404,6 +413,8 @@
 
     /* state */
     let currentIndex = 0;
+    let _badgeTimeout = null;
+    let _prevBadgeId = null;
 
     /* apply localized texts */
     titleEl.textContent = texts[lang].title;
@@ -459,13 +470,41 @@
       return paymentMethods[currentIndex] || paymentMethods[0];
     }
 
+    /* update badge with fade animation */
+    function setBadgeWithFade(id, name) {
+      // clear any pending timeout
+      if (_badgeTimeout) {
+        clearTimeout(_badgeTimeout);
+        _badgeTimeout = null;
+      }
+
+      const svg = getIconSVG(id) || '';
+      // if same id as previous, update immediately (no animation)
+      if (_prevBadgeId === id) {
+        methodBadgeEl.innerHTML = svg;
+        methodBadgeEl.setAttribute('aria-label', name);
+        return;
+      }
+
+      // animate fade out
+      methodBadgeEl.classList.add('fading');
+
+      // after the fade out duration, replace content and fade in
+      _badgeTimeout = setTimeout(() => {
+        methodBadgeEl.innerHTML = svg;
+        methodBadgeEl.setAttribute('aria-label', name);
+        // remove fading to allow fade-in (transition)
+        methodBadgeEl.classList.remove('fading');
+        _prevBadgeId = id;
+        _badgeTimeout = null;
+      }, 200); // slightly longer than CSS (180ms) to be safe
+    }
+
     /* update UI for selected method */
     function updateMethodUI() {
       const m = currentMethod();
-      // show badge as SVG (accessible)
-      const svg = getIconSVG(m.id) || '';
-      methodBadgeEl.innerHTML = svg;
-      methodBadgeEl.setAttribute('aria-label', m.name);
+      // set badge (with animation)
+      setBadgeWithFade(m.id, m.name);
       // show the URI (for copy)
       uriEl.textContent = m.uri;
       uriEl.setAttribute('data-uri', m.uri);
