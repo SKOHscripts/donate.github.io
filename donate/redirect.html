@@ -99,6 +99,8 @@
       position: relative;
       display: inline-block;
       margin: 12px auto;
+      width: 100%;
+      max-width: 260px;
     }
 
     #qrcode {
@@ -118,24 +120,21 @@
 
     /* switcher (discreet arrows + badge) */
     .switcher {
-      position: absolute;
-      right: -46px;
-      top: 50%;
-      transform: translateY(-50%);
       display: flex;
-      flex-direction: column;
-      gap: 8px;
       align-items: center;
-      z-index: 20;
+      justify-content: center;
+      gap: 12px;
+      margin: 6px 0 12px;
+      width: 100%;
     }
 
-    .switcher .arrow {
+    .arrow {
       width: 36px;
       height: 36px;
-      border-radius: 10px;
+      border-radius: 8px;
       background: rgba(27,27,27,0.95);
       border: 1px solid rgba(247,147,26,0.25);
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
@@ -143,8 +142,9 @@
       transition: transform .12s ease, box-shadow .12s ease;
       color: #f7931a;
       user-select: none;
+      font-size: 1.1rem;
     }
-    .switcher .arrow:hover { transform: translateY(-3px); box-shadow: 0 10px 18px rgba(0,0,0,0.55); }
+    .arrow:hover { transform: translateY(-3px); box-shadow: 0 10px 18px rgba(0,0,0,0.55); }
 
     .method-badge {
       display: inline-flex;
@@ -156,6 +156,8 @@
       padding: 6px 10px;
       border-radius: 999px;
       font-size: 0.85rem;
+      min-width: 90px;
+      justify-content: center;
     }
 
     /* URI and actions */
@@ -202,6 +204,22 @@
     .btn:hover::after { left: 120%; }
     .btn:hover { background: #ffb347; box-shadow: 0 8px 18px rgba(247,147,26,0.36); }
 
+    /* sober external link buttons to avoid glow/bug */
+    .link-btn {
+      display: inline-block;
+      margin: 6px 4px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      border: 1px solid rgba(247,147,26,0.5);
+      color: #f7931a;
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+    .link-btn:hover { background: rgba(247,147,26,0.08); border-color: #f7931a; color: #ffb347; }
+
     .donation-message {
       font-size: 0.9rem;
       color: #ccc;
@@ -217,9 +235,9 @@
 
     /* small screens adapt + switcher placement */
     @media (max-width: 520px) {
-      .switcher { right: -38px; transform: translateY(-60%); flex-direction: row; top: calc(100% + 8px); left: 50%; right: auto; transform: translateX(-50%); }
-      .switcher .arrow { width: 36px; height: 36px; }
-      .qr-area { margin-bottom: 10px; }
+      .qr-area { max-width: 260px; }
+      .method-badge { min-width: 72px; font-size: 0.8rem; padding: 5px 8px; }
+      .arrow { width: 40px; height: 40px; font-size: 1.15rem; }
     }
   </style>
 </head>
@@ -239,16 +257,16 @@
         <span id="dev-message"></span>
       </div>
 
-      <!-- QR + switcher -->
+      <!-- QR + switcher (switcher is now ABOVE the QR) -->
       <div class="qr-area" id="qrArea">
-        <div id="qrcode" aria-hidden="false"></div>
-
-        <!-- switcher: left arrow, method badge, right arrow -->
+        <!-- switcher: left arrow, badge, right arrow -->
         <div class="switcher" aria-hidden="false">
           <div class="arrow" id="prevBtn" title="Previous method" role="button" aria-label="Previous method">‹</div>
           <div class="method-badge" id="methodBadge" aria-live="polite">Bitcoin</div>
           <div class="arrow" id="nextBtn" title="Next method" role="button" aria-label="Next method">›</div>
         </div>
+
+        <div id="qrcode" aria-hidden="false"></div>
       </div>
 
       <!-- URI + actions -->
@@ -264,8 +282,8 @@
       </div>
 
       <div style="margin-top:14px;">
-        <a href="https://bitcoin.org" target="_blank" class="btn" style="margin-right:8px;">Bitcoin.org</a>
-        <a href="https://lightning.network" target="_blank" class="btn">Lightning Network</a>
+        <a href="https://bitcoin.org" target="_blank" class="link-btn" style="margin-right:8px;">Bitcoin.org</a>
+        <a href="https://lightning.network" target="_blank" class="link-btn">Lightning Network</a>
       </div>
     </div>
   </div>
