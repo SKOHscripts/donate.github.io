@@ -328,10 +328,10 @@
         uri: 'bitcoin:bc1qe0auz354g49yavuld862h8r42p93rdhf95gylx?message=Buy+me+a+Bitcoffee&pj=HTTPS%3A%2F%2FPAYJO.IN%2FULXWJWN3MVND5%23RK1QGMA33KWNL5HZ7KS2REHVJ9V4MVXLG2AY8N3RT7PM6W6K0G7WHLZ2+OH1QYPFLM8XL59R0XV4VGPLS7FRDSSM4TUXL07TXCWC4S0GLVLNK2SE4NQ+EX1C5NTW6G'
       },
       {
-        id: 'eth',
-        name: 'Ethereum',
-        address: '0xEDa4b087fac5faa86c43D0ab5EfCa7C525d475C2',
-        uri: 'ethereum:0xEDa4b087fac5faa86c43D0ab5EfCa7C525d475C2'
+        id: 'sponsor',
+        name: 'Github Sponsor',
+        address: '',
+        uri: 'https://github.com/sponsors/SKOHscripts'
       },
       {
         id: 'sol',
@@ -440,6 +440,10 @@
       } else if (id === 'ln') {
         return `
         <img src="lightning.svg" alt="Lightning Network" width="40" height="40">
+        `;
+      } else if (id === 'sponsor') {
+        return `
+        <img src="sponsor.png" alt="Github Sponsor" width="40" height="40">
         `;
       }
       return '';
