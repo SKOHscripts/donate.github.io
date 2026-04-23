@@ -349,7 +349,8 @@
         devMessage: "Supporting open source development",
         thanksMessage: "Every satoshi (or token) helps keep the code flowing!",
         copied: "Copied! ☕",
-        openWallet: "⚡ Open in Wallet"
+        openWallet: "⚡ Open in Wallet",
+        openSponsor: "❤️ Sponsor on GitHub"
       },
       fr: {
         title: "Offrez-moi un Bitcoffee",
@@ -357,7 +358,8 @@
         devMessage: "Soutenir le développement open source",
         thanksMessage: "Chaque satoshi (ou token) aide à faire couler le code !",
         copied: "Copié ! ☕",
-        openWallet: "⚡ Ouvrir dans le Wallet"
+        openWallet: "⚡ Ouvrir dans le Wallet",
+        openSponsor: "❤️ Sponsoriser sur GitHub"
       },
       es: {
         title:"Cómprame un Bitcoffee",
@@ -365,7 +367,8 @@
         devMessage:"Apoyando el desarrollo de código abierto",
         thanksMessage:"¡Cada satoshi (o token) ayuda!",
         copied:"¡Copiado! ☕",
-        openWallet:"⚡ Abrir en Wallet"
+        openWallet:"⚡ Abrir en Wallet",
+        openSponsor:"❤️ Patrocinar en GitHub"
       },
       de: {
         title:"Kauf mir einen Bitcoffee",
@@ -373,7 +376,8 @@
         devMessage:"Open-Source-Entwicklung unterstützen",
         thanksMessage:"Jeder Satoshi (oder Token) hilft!",
         copied:"Kopiert! ☕",
-        openWallet:"⚡ Im Wallet öffnen"
+        openWallet:"⚡ Im Wallet öffnen",
+        openSponsor:"❤️ Auf GitHub sponsern"
       },
       it: {
         title:"Comprami un Bitcoffee",
@@ -381,7 +385,8 @@
         devMessage:"Supportare lo sviluppo open source",
         thanksMessage:"Ogni satoshi (o token) aiuta!",
         copied:"Copiato! ☕",
-        openWallet:"⚡ Apri nel Wallet"
+        openWallet:"⚡ Apri nel Wallet",
+        openSponsor:"❤️ Sponsorizza su GitHub"
       },
       pt: {
         title:"Me compre um Bitcoffee",
@@ -389,7 +394,8 @@
         devMessage:"Apoiando o desenvolvimento open source",
         thanksMessage:"Cada satoshi (ou token) ajuda!",
         copied:"Copiado! ☕",
-        openWallet:"⚡ Abrir na Wallet"
+        openWallet:"⚡ Abrir na Wallet",
+        openSponsor:"❤️ Patrocinar no GitHub"
       }
     };
 
@@ -496,6 +502,8 @@
       generateLocalQR(m.uri);
       // make wallet button open current uri
       walletBtn.setAttribute('data-uri', m.uri);
+      // adapt button label to the active method
+      walletBtn.textContent = (m.id === 'sponsor') ? texts[lang].openSponsor : texts[lang].openWallet;
     }
 
     /* QR generation (uses qrcode.js createDataURL) */
