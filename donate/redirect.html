@@ -533,18 +533,21 @@
       });
     }
 
-    /* icon SVG per method id */
-    function getIconSVG(id) {
-      if (id === 'btc-silent' || id === 'btc-taproot' || id === 'btc-native') {
-        return `<img src="bitcoin.svg" alt="Bitcoin" width="24" height="24">`;
-      }
-      if (id === 'ln') {
-        return `<img src="lightning.svg" alt="Lightning Network" width="40" height="40">`;
-      }
-      if (id === 'sponsor') {
-        return `<img src="donate-fiat-icon.svg" alt="Github Sponsor" width="40" height="40">`;
-      }
-      return '';
+    /* icon element per method id — returns a DOM node, never raw HTML */
+    function getIconElement(id) {
+      const map = {
+        'btc-silent':  { src: 'bitcoin.svg',          alt: 'Bitcoin',          size: 24 },
+        'btc-taproot': { src: 'bitcoin.svg',          alt: 'Bitcoin',          size: 24 },
+        'btc-native':  { src: 'bitcoin.svg',          alt: 'Bitcoin',          size: 24 },
+        'ln':          { src: 'lightning.svg',        alt: 'Lightning Network', size: 40 },
+        'sponsor':     { src: 'donate-fiat-icon.svg', alt: 'Github Sponsor',   size: 40 }
+      };
+      const cfg = map[id];
+      if (!cfg) return null;
+      const img = new Image(cfg.size, cfg.size);
+      img.src = cfg.src;
+      img.alt = cfg.alt;
+      return img;
     }
 
     function currentMethod() {
@@ -554,16 +557,18 @@
     /* animated badge swap */
     function setBadgeWithFade(id, name) {
       if (_badgeTimeout) { clearTimeout(_badgeTimeout); _badgeTimeout = null; }
-      const svg = getIconSVG(id) || '';
-      if (_prevBadgeId === id) {
-        methodBadgeEl.innerHTML = svg;
+
+      function applyIcon() {
+        methodBadgeEl.innerHTML = '';
+        const el = getIconElement(id);
+        if (el) methodBadgeEl.appendChild(el);
         methodBadgeEl.setAttribute('aria-label', name);
-        return;
       }
+
+      if (_prevBadgeId === id) { applyIcon(); return; }
       methodBadgeEl.classList.add('fading');
       _badgeTimeout = setTimeout(() => {
-        methodBadgeEl.innerHTML = svg;
-        methodBadgeEl.setAttribute('aria-label', name);
+        applyIcon();
         methodBadgeEl.classList.remove('fading');
         _prevBadgeId = id;
         _badgeTimeout = null;
