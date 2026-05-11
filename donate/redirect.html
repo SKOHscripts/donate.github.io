@@ -325,9 +325,9 @@
       <!-- QR + switcher -->
       <div class="qr-area" id="qrArea">
         <div class="switcher" aria-hidden="false">
-          <div class="arrow" id="prevBtn" title="Previous method" role="button" aria-label="Previous method">‹</div>
+          <div class="arrow" id="prevBtn" title="Previous method" role="button" tabindex="0" aria-label="Previous method">‹</div>
           <div class="method-badge" id="methodBadge" aria-live="polite" aria-label="Payment method icon"></div>
-          <div class="arrow" id="nextBtn" title="Next method" role="button" aria-label="Next method">›</div>
+          <div class="arrow" id="nextBtn" title="Next method" role="button" tabindex="0" aria-label="Next method">›</div>
         </div>
 
         <div id="qrcode" aria-hidden="false"></div>
@@ -518,7 +518,12 @@
       paymentMethods.forEach((_, i) => {
         const dot = document.createElement('div');
         dot.className = 'step-dot' + (i === currentIndex ? ' active' : '');
-        dot.addEventListener('click', () => { currentIndex = i; updateMethodUI(); });
+        dot.setAttribute('tabindex', '0');
+        dot.setAttribute('role', 'button');
+        dot.setAttribute('aria-label', `Payment method ${i + 1}`);
+        const activate = () => { currentIndex = i; updateMethodUI(); };
+        dot.addEventListener('click', activate);
+        dot.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } });
         stepDotsEl.appendChild(dot);
       });
     }
@@ -621,6 +626,8 @@
 
     prevBtn.addEventListener('click', prevMethod);
     nextBtn.addEventListener('click', nextMethod);
+    prevBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); prevMethod(); } });
+    nextBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nextMethod(); } });
 
     document.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowLeft')  prevMethod();
@@ -635,10 +642,8 @@
         const prev = this.textContent;
         this.textContent = texts[lang].copied;
         setTimeout(() => { this.textContent = prev; }, 2000);
-      }).catch(() => {
-        const prev = this.textContent;
-        this.textContent = texts[lang].copied;
-        setTimeout(() => { this.textContent = prev; }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy address:', err);
       });
     });
 
@@ -646,7 +651,12 @@
     walletBtn.addEventListener('click', function(e) {
       e.preventDefault();
       const uri = this.getAttribute('data-uri') || (currentMethod() && currentMethod().uri);
-      if (uri) window.location.href = uri;
+      if (!uri) return;
+      if (uri.startsWith('http')) {
+        window.open(uri, '_blank', 'noopener,noreferrer');
+      } else {
+        window.location.href = uri;
+      }
     });
 
     /* init */
