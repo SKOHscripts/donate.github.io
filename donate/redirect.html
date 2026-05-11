@@ -384,6 +384,13 @@
         uri: 'lightning:skoh00@cake.cash'
       },
       {
+        id: 'btc-silent',
+        name: 'Bitcoin',
+        sublabel: 'Silent Payments (sp1q)',
+        address: 'sp1qq0mg6p8wgxk7455en0drdves9v9478u27wsx54xcm6tcjdr4ysuj6qc58j9c34s5rp036r8mz7zt7ec5epcnq7es9fn4nlnd0y5agl8u8q5s6l0e',
+        uri: 'bitcoin:sp1qq0mg6p8wgxk7455en0drdves9v9478u27wsx54xcm6tcjdr4ysuj6qc58j9c34s5rp036r8mz7zt7ec5epcnq7es9fn4nlnd0y5agl8u8q5s6l0e'
+      },
+      {
         id: 'btc-taproot',
         name: 'Bitcoin',
         sublabel: 'Taproot (bc1p)',
@@ -523,7 +530,7 @@
 
     /* icon SVG per method id */
     function getIconSVG(id) {
-      if (id === 'btc-taproot' || id === 'btc-native') {
+      if (id === 'btc-silent' || id === 'btc-taproot' || id === 'btc-native') {
         return `<img src="bitcoin.svg" alt="Bitcoin" width="24" height="24">`;
       }
       if (id === 'ln') {
