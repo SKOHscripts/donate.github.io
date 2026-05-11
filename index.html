@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+
+<!--
+---------------------------------------------------
+  Donation page with multi-address switcher
+  Replace addresses in paymentMethods array as needed.
+
+  Copyright (c) 2025 Corentin MICHEL
+
+  URL: https://github.com/SKOHscripts/donate.github.io
+
+  Licensed under the MIT license:
+  http://www.opensource.org/licenses/mit-license.php
+---------------------------------------------------
+-->
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Buy me a Bitcoffee</title>
+  <script type="text/javascript" src="donate/qrcode.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #1f1f1f 0%, #2c2c2c 50%, #333 100%);
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      color: #f7931a;
+      padding: 40px 15px;
+      overflow-y: auto;
+      min-height: 100vh;
+    }
+    .page-wrapper {
+      display: flex;
+      justify-content: center;
+    }
+    .card {
+      background: #1b1b1b;
+      border-radius: 15px;
+      border: 1px solid rgba(247, 147, 26, 0.5);
+      box-shadow: 0 10px 30px rgba(247, 147, 26, 0.25);
+      padding: 30px 25px;
+      width: 420px;
+      max-width: 95vw;
+      text-align: center;
+      position: relative;
+    }
+
+    .coffee-bitcoin-combo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 12px;
+    }
+    .coffee-emoji {
+      font-size: 3rem;
+      filter: drop-shadow(0 4px 15px rgba(139, 69, 19, 0.4));
+      animation: steam 2s ease-in-out infinite;
+    }
+    @keyframes steam {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+    .btc-icon {
+      font-size: 2.8rem;
+      color: #f7931a;
+      filter: drop-shadow(0 0 20px rgba(247, 147, 26, 0.8));
+      animation: glow 3s ease-in-out infinite;
+    }
+    @keyframes glow {
+      0%, 100% { text-shadow: 0 0 10px rgba(247, 147, 26, 0.5); }
+      50% { text-shadow: 0 0 25px rgba(247, 147, 26, 0.9), 0 0 40px rgba(247, 147, 26, 0.7); }
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin: 0 auto 12px;
+      color: #f7931a;
+    }
+    .subtitle {
+      font-size: 1rem;
+      color: #ccc;
+      margin-bottom: 14px;
+    }
+    .dev-info {
+      background: #222;
+      border-left: 4px solid #f7931a;
+      padding: 12px;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+      color: #ddd;
+    }
+
+    /* QR area + switcher */
+    .qr-area {
+      position: relative;
+      display: inline-block;
+      margin: 12px auto;
+      width: 100%;
+      max-width: 260px;
+    }
+
+    /* Method name label above switcher */
+    .method-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #f7931a;
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+      min-height: 1.3em;
+      transition: opacity 180ms ease;
+    }
+    .method-name.fading { opacity: 0; }
+
+    /* Method sub-label (e.g. "Taproot", "Native SegWit") */
+    .method-sublabel {
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-bottom: 8px;
+      min-height: 1.1em;
+      transition: opacity 180ms ease;
+    }
+    .method-sublabel.fading { opacity: 0; }
+
+    #qrcode {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 0 20px rgba(247, 147, 26, 0.3);
+    }
+    #qrcode img {
+      display: block;
+      margin: 0 auto;
+      border-radius: 8px;
+      max-width: 220px;
+      width: 100%;
+      height: auto;
+    }
+
+    /* switcher: arrows + icon badge */
+    .switcher {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 6px 0 12px;
+      width: 100%;
+    }
+
+    .arrow {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(27,27,27,0.95);
+      border: 1px solid rgba(247,147,26,0.25);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.45);
+      transition: transform .12s ease, box-shadow .12s ease;
+      color: #f7931a;
+      user-select: none;
+      font-size: 1.1rem;
+    }
+    .arrow:hover { transform: translateY(-3px); box-shadow: 0 10px 18px rgba(0,0,0,0.55); }
+
+    .method-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(247,147,26,0.06);
+      color: #f3b37a;
+      border: 1px solid rgba(247,147,26,0.12);
+      padding: 6px 8px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      min-width: 44px;
+      height: 36px;
+      transition: opacity 180ms ease, transform 180ms ease;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .method-badge.fading {
+      opacity: 0;
+      transform: translateY(-8px) scale(0.98);
+    }
+    .method-badge svg { display:block; width:20px; height:20px; }
+
+    /* Step indicator */
+    .step-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin: 6px 0 10px;
+    }
+    .step-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(247,147,26,0.2);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .step-dot.active {
+      background: #f7931a;
+      transform: scale(1.25);
+    }
+
+    /* URI display and copy */
+    .uri-section { margin-top: 14px; }
+    .uri-label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 5px;
+    }
+    .uri-row { display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; }
+    .payuri {
+      font-size: 0.82rem;
+      background: #222;
+      border: 1px solid #f7931a;
+      border-radius: 6px;
+      padding: 10px;
+      cursor: pointer;
+      color: #f7931a;
+      transition: all 0.25s ease;
+      word-break: break-all;
+      min-width: 200px;
+      text-align: center;
+      position: relative;
+    }
+    .payuri:hover { background: #2a2a2a; box-shadow: 0 0 10px rgba(247, 147, 26, 0.35); }
+    .copy-hint {
+      font-size: 0.7rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.28s ease;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      color: #121212;
+      background: #f7931a;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.28);
+      border: none;
+    }
+    .btn::after {
+      content: "";
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: rgba(255,255,255,0.12);
+      transition: left .36s cubic-bezier(.22,.9,.34,1);
+      transform: skewX(-18deg);
+    }
+    .btn:hover::after { left: 120%; }
+    .btn:hover { background: #ffb347; box-shadow: 0 8px 18px rgba(247,147,26,0.36); }
+
+    .link-btn {
+      display: inline-block;
+      margin: 6px 4px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      border: 1px solid rgba(247,147,26,0.5);
+      color: #f7931a;
+      background: transparent;
+      transition: all 0.3s ease;
+    }
+    .link-btn:hover { background: rgba(247,147,26,0.08); border-color: #f7931a; color: #ffb347; }
+
+    .donation-message {
+      font-size: 0.9rem;
+      color: #ccc;
+      margin-top: 14px;
+      font-style: italic;
+    }
+
+    .heart {
+      color: #ff6b6b;
+      animation: heartbeat 1.5s ease-in-out infinite;
+    }
+    @keyframes heartbeat { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+
+    @media (max-width: 520px) {
+      .qr-area { max-width: 260px; }
+      .method-badge { min-width: 44px; font-size: 0.8rem; padding: 5px 6px; height:36px; }
+      .arrow { width: 40px; height: 40px; font-size: 1.15rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="card">
+      <div class="coffee-bitcoin-combo">
+        <span class="coffee-emoji">☕</span>
+        <span style="font-size: 1.5rem; color: #aaa;">+</span>
+        <span class="btc-icon">₿</span>
+      </div>
+
+      <h1 id="title"></h1>
+      <div class="subtitle" id="subtitle"></div>
+
+      <div class="dev-info">
+        <span id="dev-message"></span>
+      </div>
+
+      <!-- Method name + sublabel -->
+      <div class="method-name" id="methodName"></div>
+      <div class="method-sublabel" id="methodSublabel"></div>
+
+      <!-- QR + switcher -->
+      <div class="qr-area" id="qrArea">
+        <div class="switcher" aria-hidden="false">
+          <div class="arrow" id="prevBtn" title="Previous method" role="button" aria-label="Previous method">‹</div>
+          <div class="method-badge" id="methodBadge" aria-live="polite" aria-label="Payment method icon"></div>
+          <div class="arrow" id="nextBtn" title="Next method" role="button" aria-label="Next method">›</div>
+        </div>
+
+        <div id="qrcode" aria-hidden="false"></div>
+      </div>
+
+      <!-- Step dots -->
+      <div class="step-dots" id="stepDots"></div>
+
+      <!-- Address display + actions -->
+      <div class="uri-section">
+        <div class="uri-label" id="uriLabel"></div>
+        <div class="uri-row">
+          <div class="payuri" id="uri" title="Click to copy"></div>
+          <button id="walletBtn" class="btn" title="Open in wallet">⚡ Open in Wallet</button>
+        </div>
+        <div class="copy-hint" id="copyHint"></div>
+      </div>
+
+      <div class="donation-message">
+        <span class="heart">❤️</span>
+        <span id="thanks-message"></span>
+        <span class="heart">❤️</span>
+      </div>
+
+      <div style="margin-top:14px;">
+        <a href="https://bitcoin.org" target="_blank" class="link-btn" style="margin-right:8px;">Bitcoin.org</a>
+        <a href="https://lightning.network" target="_blank" class="link-btn">Lightning Network</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*
+      Payment methods config — edit this array to change supported addresses.
+        id:       short identifier
+        name:     displayed as method title
+        sublabel: optional subtitle (e.g. address type)
+        address:  raw address shown to the user
+        uri:      wallet URI used for QR / open-in-wallet / clipboard
+    */
+    const paymentMethods = [
+      {
+        id: 'sponsor',
+        name: 'GitHub Sponsor',
+        sublabel: '',
+        address: 'github.com/sponsors/SKOHscripts',
+        uri: 'https://github.com/sponsors/SKOHscripts'
+      },
+      {
+        id: 'ln',
+        name: 'Bitcoin Lightning',
+        sublabel: 'Lightning Address',
+        address: 'skoh00@cake.cash',
+        uri: 'lightning:skoh00@cake.cash'
+      },
+      {
+        id: 'btc-silent',
+        name: 'Bitcoin',
+        sublabel: 'Silent Payments (sp1q)',
+        address: 'sp1qq0mg6p8wgxk7455en0drdves9v9478u27wsx54xcm6tcjdr4ysuj6qc58j9c34s5rp036r8mz7zt7ec5epcnq7es9fn4nlnd0y5agl8u8q5s6l0e',
+        uri: 'bitcoin:sp1qq0mg6p8wgxk7455en0drdves9v9478u27wsx54xcm6tcjdr4ysuj6qc58j9c34s5rp036r8mz7zt7ec5epcnq7es9fn4nlnd0y5agl8u8q5s6l0e'
+      },
+      {
+        id: 'btc-taproot',
+        name: 'Bitcoin',
+        sublabel: 'Taproot (bc1p)',
+        address: 'bc1pezlxc3ngfp4drvpjhzc3m8c6fl7aegz73zhkawkgfjl8ezry4kksvlmy6l',
+        uri: 'bitcoin:bc1pezlxc3ngfp4drvpjhzc3m8c6fl7aegz73zhkawkgfjl8ezry4kksvlmy6l'
+      },
+      {
+        id: 'btc-native',
+        name: 'Bitcoin',
+        sublabel: 'Native SegWit (bc1q)',
+        address: 'bc1qw4v8hgjye9fxueppjksert26vlsn6g78dstmzz',
+        uri: 'bitcoin:bc1qw4v8hgjye9fxueppjksert26vlsn6g78dstmzz'
+      }
+    ];
+
+    /* Localised UI strings */
+    const texts = {
+      en: {
+        title: "Buy me a Bitcoffee",
+        subtitle: "Fuel my coding sessions with crypto ☕",
+        devMessage: "Supporting open source development",
+        thanksMessage: "Every satoshi helps keep the code flowing!",
+        copied: "Copied! ☕",
+        openWallet: "⚡ Open in Wallet",
+        openSponsor: "❤️ Sponsor on GitHub",
+        addressLabel: "Address",
+        clickToCopy: "Click address to copy"
+      },
+      fr: {
+        title: "Offrez-moi un Bitcoffee",
+        subtitle: "Alimentez mes sessions de code avec de la crypto ☕",
+        devMessage: "Soutenir le développement open source",
+        thanksMessage: "Chaque satoshi aide à faire couler le code !",
+        copied: "Copié ! ☕",
+        openWallet: "⚡ Ouvrir dans le Wallet",
+        openSponsor: "❤️ Sponsoriser sur GitHub",
+        addressLabel: "Adresse",
+        clickToCopy: "Cliquer pour copier"
+      },
+      es: {
+        title: "Cómprame un Bitcoffee",
+        subtitle: "Alimenta mis sesiones de código con crypto ☕",
+        devMessage: "Apoyando el desarrollo de código abierto",
+        thanksMessage: "¡Cada satoshi ayuda!",
+        copied: "¡Copiado! ☕",
+        openWallet: "⚡ Abrir en Wallet",
+        openSponsor: "❤️ Patrocinar en GitHub",
+        addressLabel: "Dirección",
+        clickToCopy: "Clic para copiar"
+      },
+      de: {
+        title: "Kauf mir einen Bitcoffee",
+        subtitle: "Füttere meine Coding-Sessions mit Crypto ☕",
+        devMessage: "Open-Source-Entwicklung unterstützen",
+        thanksMessage: "Jeder Satoshi hilft!",
+        copied: "Kopiert! ☕",
+        openWallet: "⚡ Im Wallet öffnen",
+        openSponsor: "❤️ Auf GitHub sponsern",
+        addressLabel: "Adresse",
+        clickToCopy: "Zum Kopieren klicken"
+      },
+      it: {
+        title: "Comprami un Bitcoffee",
+        subtitle: "Alimenta le mie sessioni di coding con crypto ☕",
+        devMessage: "Supportare lo sviluppo open source",
+        thanksMessage: "Ogni satoshi aiuta!",
+        copied: "Copiato! ☕",
+        openWallet: "⚡ Apri nel Wallet",
+        openSponsor: "❤️ Sponsorizza su GitHub",
+        addressLabel: "Indirizzo",
+        clickToCopy: "Clicca per copiare"
+      },
+      pt: {
+        title: "Me compre um Bitcoffee",
+        subtitle: "Alimente minhas sessões de código com crypto ☕",
+        devMessage: "Apoiando o desenvolvimento open source",
+        thanksMessage: "Cada satoshi ajuda!",
+        copied: "Copiado! ☕",
+        openWallet: "⚡ Abrir na Wallet",
+        openSponsor: "❤️ Patrocinar no GitHub",
+        addressLabel: "Endereço",
+        clickToCopy: "Clique para copiar"
+      }
+    };
+
+    function detectLang() {
+      const l = (navigator.language || navigator.userLanguage || "en").slice(0,2).toLowerCase();
+      return (l in texts) ? l : "en";
+    }
+    const lang = detectLang();
+
+    /* DOM refs */
+    const titleEl        = document.getElementById('title');
+    const subtitleEl     = document.getElementById('subtitle');
+    const devMsgEl       = document.getElementById('dev-message');
+    const thanksEl       = document.getElementById('thanks-message');
+    const uriEl          = document.getElementById('uri');
+    const uriLabelEl     = document.getElementById('uriLabel');
+    const copyHintEl     = document.getElementById('copyHint');
+    const qrcodeEl       = document.getElementById('qrcode');
+    const methodBadgeEl  = document.getElementById('methodBadge');
+    const methodNameEl   = document.getElementById('methodName');
+    const methodSublabelEl = document.getElementById('methodSublabel');
+    const stepDotsEl     = document.getElementById('stepDots');
+    const prevBtn        = document.getElementById('prevBtn');
+    const nextBtn        = document.getElementById('nextBtn');
+    const walletBtn      = document.getElementById('walletBtn');
+
+    /* state */
+    let currentIndex = 0;
+    let _badgeTimeout = null;
+    let _prevBadgeId = null;
+
+    /* apply localized static texts */
+    titleEl.textContent    = texts[lang].title;
+    subtitleEl.textContent = texts[lang].subtitle;
+    devMsgEl.textContent   = texts[lang].devMessage;
+    thanksEl.textContent   = texts[lang].thanksMessage;
+    walletBtn.textContent  = texts[lang].openWallet;
+    copyHintEl.textContent = texts[lang].clickToCopy;
+
+    /* build step dots */
+    function buildDots() {
+      stepDotsEl.innerHTML = '';
+      paymentMethods.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'step-dot' + (i === currentIndex ? ' active' : '');
+        dot.addEventListener('click', () => { currentIndex = i; updateMethodUI(); });
+        stepDotsEl.appendChild(dot);
+      });
+    }
+    function updateDots() {
+      Array.from(stepDotsEl.children).forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    /* icon SVG per method id */
+    function getIconSVG(id) {
+      if (id === 'btc-silent' || id === 'btc-taproot' || id === 'btc-native') {
+        return `<img src="donate/bitcoin.svg" alt="Bitcoin" width="24" height="24">`;
+      }
+      if (id === 'ln') {
+        return `<img src="donate/lightning.svg" alt="Lightning Network" width="40" height="40">`;
+      }
+      if (id === 'sponsor') {
+        return `<img src="donate/donate-fiat-icon.svg" alt="Github Sponsor" width="40" height="40">`;
+      }
+      return '';
+    }
+
+    function currentMethod() {
+      return paymentMethods[currentIndex] || paymentMethods[0];
+    }
+
+    /* animated badge swap */
+    function setBadgeWithFade(id, name) {
+      if (_badgeTimeout) { clearTimeout(_badgeTimeout); _badgeTimeout = null; }
+      const svg = getIconSVG(id) || '';
+      if (_prevBadgeId === id) {
+        methodBadgeEl.innerHTML = svg;
+        methodBadgeEl.setAttribute('aria-label', name);
+        return;
+      }
+      methodBadgeEl.classList.add('fading');
+      _badgeTimeout = setTimeout(() => {
+        methodBadgeEl.innerHTML = svg;
+        methodBadgeEl.setAttribute('aria-label', name);
+        methodBadgeEl.classList.remove('fading');
+        _prevBadgeId = id;
+        _badgeTimeout = null;
+      }, 200);
+    }
+
+    /* animated name/sublabel swap */
+    function setTextWithFade(el, newText) {
+      el.classList.add('fading');
+      setTimeout(() => {
+        el.textContent = newText;
+        el.classList.remove('fading');
+      }, 180);
+    }
+
+    /* update full UI for the current method */
+    function updateMethodUI() {
+      const m = currentMethod();
+
+      setBadgeWithFade(m.id, m.name);
+      setTextWithFade(methodNameEl, m.name);
+      setTextWithFade(methodSublabelEl, m.sublabel || '');
+
+      uriLabelEl.textContent = texts[lang].addressLabel;
+      uriEl.textContent = m.address;
+      uriEl.setAttribute('data-uri', m.uri);
+
+      generateLocalQR(m.uri);
+
+      walletBtn.setAttribute('data-uri', m.uri);
+      walletBtn.textContent = (m.id === 'sponsor') ? texts[lang].openSponsor : texts[lang].openWallet;
+
+      updateDots();
+    }
+
+    /* QR generation */
+    function generateLocalQR(uri) {
+      if (!uri) { qrcodeEl.innerHTML = ''; return; }
+      try {
+        const qr = qrcode(0, 'M');
+        qr.addData(uri);
+        qr.make();
+        const qrImg = qr.createDataURL(6, 12);
+        qrcodeEl.innerHTML = `<img src="${qrImg}" alt="Payment QR Code for ${currentMethod().name}">`;
+      } catch (e) {
+        console.error('QR generation failed', e);
+        qrcodeEl.innerHTML = `<div style="color:red;">QR generation error</div>`;
+      }
+    }
+
+    /* navigation */
+    function nextMethod() {
+      currentIndex = (currentIndex + 1) % paymentMethods.length;
+      updateMethodUI();
+    }
+    function prevMethod() {
+      currentIndex = (currentIndex - 1 + paymentMethods.length) % paymentMethods.length;
+      updateMethodUI();
+    }
+
+    prevBtn.addEventListener('click', prevMethod);
+    nextBtn.addEventListener('click', nextMethod);
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft')  prevMethod();
+      if (e.key === 'ArrowRight') nextMethod();
+    });
+
+    /* copy address on click */
+    uriEl.addEventListener('click', function() {
+      const address = currentMethod().address || '';
+      if (!address) return;
+      navigator.clipboard.writeText(address).then(() => {
+        const prev = this.textContent;
+        this.textContent = texts[lang].copied;
+        setTimeout(() => { this.textContent = prev; }, 2000);
+      }).catch(() => {
+        const prev = this.textContent;
+        this.textContent = texts[lang].copied;
+        setTimeout(() => { this.textContent = prev; }, 2000);
+      });
+    });
+
+    /* open in wallet */
+    walletBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const uri = this.getAttribute('data-uri') || (currentMethod() && currentMethod().uri);
+      if (uri) window.location.href = uri;
+    });
+
+    /* init */
+    buildDots();
+    updateMethodUI();
+
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted) updateMethodUI();
+    });
+
+    window.__donation_setIndex = function(i) {
+      if (typeof i === 'number' && i >= 0 && i < paymentMethods.length) {
+        currentIndex = i;
+        updateMethodUI();
+      }
+    };
+  </script>
+</body>
+</html>
