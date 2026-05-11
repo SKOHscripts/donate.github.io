@@ -594,11 +594,9 @@
 
       uriLabelEl.textContent = texts[lang].addressLabel;
       uriEl.textContent = m.address;
-      uriEl.setAttribute('data-uri', m.uri);
 
       generateLocalQR(m.uri);
 
-      walletBtn.setAttribute('data-uri', m.uri);
       walletBtn.textContent = (m.id === 'sponsor') ? texts[lang].openSponsor : texts[lang].openWallet;
 
       updateDots();
@@ -663,8 +661,11 @@
     /* open in wallet */
     walletBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      const uri = this.getAttribute('data-uri') || (currentMethod() && currentMethod().uri);
-      if (!uri) return;
+      const m = currentMethod();
+      if (!m || !m.uri) return;
+      const uri = m.uri;
+      const allowed = ['https:', 'http:', 'bitcoin:', 'lightning:'];
+      if (!allowed.some(s => uri.startsWith(s))) return;
       if (uri.startsWith('http')) {
         window.open(uri, '_blank', 'noopener,noreferrer');
       } else {
