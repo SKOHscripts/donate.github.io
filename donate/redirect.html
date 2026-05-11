@@ -607,10 +607,18 @@
         qr.addData(uri);
         qr.make();
         const qrImg = qr.createDataURL(6, 12);
-        qrcodeEl.innerHTML = `<img src="${qrImg}" alt="Payment QR Code for ${currentMethod().name}">`;
+        const img = new Image();
+        img.src = qrImg;
+        img.alt = 'Payment QR Code for ' + currentMethod().name;
+        qrcodeEl.innerHTML = '';
+        qrcodeEl.appendChild(img);
       } catch (e) {
         console.error('QR generation failed', e);
-        qrcodeEl.innerHTML = `<div style="color:red;">QR generation error</div>`;
+        const errMsg = document.createElement('div');
+        errMsg.style.color = 'red';
+        errMsg.textContent = 'QR generation error';
+        qrcodeEl.innerHTML = '';
+        qrcodeEl.appendChild(errMsg);
       }
     }
 
