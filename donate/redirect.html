@@ -21,7 +21,6 @@
   <title>Buy me a Bitcoffee</title>
   <script type="text/javascript" src="qrcode.js"></script>
   <style>
-    /* --- Page look (keeps your orange / dark dev theme) --- */
     body {
       background: linear-gradient(135deg, #1f1f1f 0%, #2c2c2c 50%, #333 100%);
       font-family: 'Poppins', sans-serif;
@@ -103,6 +102,28 @@
       max-width: 260px;
     }
 
+    /* Method name label above switcher */
+    .method-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #f7931a;
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+      min-height: 1.3em;
+      transition: opacity 180ms ease;
+    }
+    .method-name.fading { opacity: 0; }
+
+    /* Method sub-label (e.g. "Taproot", "Native SegWit") */
+    .method-sublabel {
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-bottom: 8px;
+      min-height: 1.1em;
+      transition: opacity 180ms ease;
+    }
+    .method-sublabel.fading { opacity: 0; }
+
     #qrcode {
       background: #fff;
       border-radius: 12px;
@@ -118,7 +139,7 @@
       height: auto;
     }
 
-    /* switcher (discreet arrows + badge) */
+    /* switcher: arrows + icon badge */
     .switcher {
       display: flex;
       align-items: center;
@@ -159,8 +180,6 @@
       font-size: 0.85rem;
       min-width: 44px;
       height: 36px;
-
-      /* animation properties for fade+slide */
       transition: opacity 180ms ease, transform 180ms ease;
       opacity: 1;
       transform: translateY(0);
@@ -171,10 +190,37 @@
     }
     .method-badge svg { display:block; width:20px; height:20px; }
 
-    /* URI and actions */
-    .uri-row { margin-top: 12px; display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; }
+    /* Step indicator */
+    .step-dots {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin: 6px 0 10px;
+    }
+    .step-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(247,147,26,0.2);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .step-dot.active {
+      background: #f7931a;
+      transform: scale(1.25);
+    }
+
+    /* URI display and copy */
+    .uri-section { margin-top: 14px; }
+    .uri-label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 5px;
+    }
+    .uri-row { display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; }
     .payuri {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       background: #222;
       border: 1px solid #f7931a;
       border-radius: 6px;
@@ -184,9 +230,15 @@
       transition: all 0.25s ease;
       word-break: break-all;
       min-width: 200px;
-      text-align:center;
+      text-align: center;
+      position: relative;
     }
     .payuri:hover { background: #2a2a2a; box-shadow: 0 0 10px rgba(247, 147, 26, 0.35); }
+    .copy-hint {
+      font-size: 0.7rem;
+      color: #666;
+      margin-top: 4px;
+    }
 
     .btn {
       padding: 10px 16px;
@@ -215,7 +267,6 @@
     .btn:hover::after { left: 120%; }
     .btn:hover { background: #ffb347; box-shadow: 0 8px 18px rgba(247,147,26,0.36); }
 
-    /* sober external link buttons to avoid glow/bug */
     .link-btn {
       display: inline-block;
       margin: 6px 4px;
@@ -244,7 +295,6 @@
     }
     @keyframes heartbeat { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
 
-    /* small screens adapt + switcher placement */
     @media (max-width: 520px) {
       .qr-area { max-width: 260px; }
       .method-badge { min-width: 44px; font-size: 0.8rem; padding: 5px 6px; height:36px; }
@@ -268,9 +318,12 @@
         <span id="dev-message"></span>
       </div>
 
-      <!-- QR + switcher (switcher is now ABOVE the QR) -->
+      <!-- Method name + sublabel -->
+      <div class="method-name" id="methodName"></div>
+      <div class="method-sublabel" id="methodSublabel"></div>
+
+      <!-- QR + switcher -->
       <div class="qr-area" id="qrArea">
-        <!-- switcher: left arrow, badge, right arrow -->
         <div class="switcher" aria-hidden="false">
           <div class="arrow" id="prevBtn" title="Previous method" role="button" aria-label="Previous method">‹</div>
           <div class="method-badge" id="methodBadge" aria-live="polite" aria-label="Payment method icon"></div>
@@ -280,10 +333,17 @@
         <div id="qrcode" aria-hidden="false"></div>
       </div>
 
-      <!-- URI + actions -->
-      <div class="uri-row">
-        <div class="payuri" id="uri" title="Click to copy"></div>
-        <button id="walletBtn" class="btn" title="Open in wallet">⚡ Open in Wallet</button>
+      <!-- Step dots -->
+      <div class="step-dots" id="stepDots"></div>
+
+      <!-- Address display + actions -->
+      <div class="uri-section">
+        <div class="uri-label" id="uriLabel"></div>
+        <div class="uri-row">
+          <div class="payuri" id="uri" title="Click to copy"></div>
+          <button id="walletBtn" class="btn" title="Open in wallet">⚡ Open in Wallet</button>
+        </div>
+        <div class="copy-hint" id="copyHint"></div>
       </div>
 
       <div class="donation-message">
@@ -300,102 +360,119 @@
   </div>
 
   <script>
-    /* =========================
-       Payment methods config
-       =========================
-       Edit this array to add/change supported addresses.
-       Each entry should provide:
-         - id: short id
-         - name: shown in badge (used for aria)
-         - address: raw address (for display)
-         - uri: wallet URI used for QR / open-in-wallet / copy (string)
-           * Bitcoin example: "bitcoin:1A1zP1..." or "bitcoin:?lno=..."
-           * Ethereum example: "ethereum:0xABCD..."
-           * Solana example: "solana:YourSolAddress..."
-       Add or remove entries as you like.
+    /*
+      Payment methods config — edit this array to change supported addresses.
+        id:       short identifier
+        name:     displayed as method title
+        sublabel: optional subtitle (e.g. address type)
+        address:  raw address shown to the user
+        uri:      wallet URI used for QR / open-in-wallet / clipboard
     */
     const paymentMethods = [
       {
         id: 'sponsor',
-        name: 'Github Sponsor',
-        address: '',
+        name: 'GitHub Sponsor',
+        sublabel: '',
+        address: 'github.com/sponsors/SKOHscripts',
         uri: 'https://github.com/sponsors/SKOHscripts'
       },
       {
         id: 'ln',
         name: 'Bitcoin Lightning',
-        address: 'lnbc50u1p5mt4dapp5w5slcl6uh97vv77ffqpacm7apknkp6gttjq5gfdvhkxdtj43zeuqdqagf6hjgrdv5sxzgzzd96xxmmxvejk2cqzxrxqyp2xqrzjqw524mde9hq75tyc4uva8tmpdskpry5ptsmgjd3zwh8zdytq32gt6zzxeyqq28qqqqqqqqqqqqqqq9gq2yrzjqtnpp8ds33zeg5a6cumptreev23g7pwlp39cvcz8jeuurayvrmvdsrw9ysqqq9gqqqqqqqqpqqqqq9sq2gsp56cks49m53d9f3h58stnrk9uc6w7rhk6dcayg0aek7nhlcyc04nkq9qxpqysgqlekq2hg68nedcm0lq7wlnt9guqz85xa99mfkpqtcfce9tkupxpsyx2dxpkm9p5q53ed7dpqp9et953p6qj02mfy7a246uawwzcwd3gspa52uw5', // optional display
-        uri: 'lightning:lnbc50u1p5mt4dapp5w5slcl6uh97vv77ffqpacm7apknkp6gttjq5gfdvhkxdtj43zeuqdqagf6hjgrdv5sxzgzzd96xxmmxvejk2cqzxrxqyp2xqrzjqw524mde9hq75tyc4uva8tmpdskpry5ptsmgjd3zwh8zdytq32gt6zzxeyqq28qqqqqqqqqqqqqqq9gq2yrzjqtnpp8ds33zeg5a6cumptreev23g7pwlp39cvcz8jeuurayvrmvdsrw9ysqqq9gqqqqqqqqpqqqqq9sq2gsp56cks49m53d9f3h58stnrk9uc6w7rhk6dcayg0aek7nhlcyc04nkq9qxpqysgqlekq2hg68nedcm0lq7wlnt9guqz85xa99mfkpqtcfce9tkupxpsyx2dxpkm9p5q53ed7dpqp9et953p6qj02mfy7a246uawwzcwd3gspa52uw5'
+        sublabel: 'Lightning Address',
+        address: 'skoh00@cake.cash',
+        uri: 'lightning:skoh00@cake.cash'
       },
       {
-        id: 'btc',
+        id: 'btc-silent',
         name: 'Bitcoin',
-        address: 'bitcoin:bc1qe0auz354g49yavuld862h8r42p93rdhf95gylx?message=Buy+me+a+Bitcoffee&pj=HTTPS%3A%2F%2FPAYJO.IN%2FULXWJWN3MVND5%23RK1QGMA33KWNL5HZ7KS2REHVJ9V4MVXLG2AY8N3RT7PM6W6K0G7WHLZ2+OH1QYPFLM8XL59R0XV4VGPLS7FRDSSM4TUXL07TXCWC4S0GLVLNK2SE4NQ+EX1C5NTW6G', // optional display
-        uri: 'bitcoin:bc1qe0auz354g49yavuld862h8r42p93rdhf95gylx?message=Buy+me+a+Bitcoffee&pj=HTTPS%3A%2F%2FPAYJO.IN%2FULXWJWN3MVND5%23RK1QGMA33KWNL5HZ7KS2REHVJ9V4MVXLG2AY8N3RT7PM6W6K0G7WHLZ2+OH1QYPFLM8XL59R0XV4VGPLS7FRDSSM4TUXL07TXCWC4S0GLVLNK2SE4NQ+EX1C5NTW6G'
+        sublabel: 'Silent Payments (sp1q)',
+        address: 'sp1qq0mg6p8wgxk7455en0drdves9v9478u27wsx54xcm6tcjdr4ysuj6qc58j9c34s5rp036r8mz7zt7ec5epcnq7es9fn4nlnd0y5agl8u8q5s6l0e',
+        uri: 'bitcoin:sp1qq0mg6p8wgxk7455en0drdves9v9478u27wsx54xcm6tcjdr4ysuj6qc58j9c34s5rp036r8mz7zt7ec5epcnq7es9fn4nlnd0y5agl8u8q5s6l0e'
       },
       {
-        id: 'sol',
-        name: 'Solana',
-        address: 'ESFip6XcRQfjREve9Xa7AopF4Ngkby9431RsHQ41nta',
-        uri: 'solana:ESFip6XcRQfjREve9Xa7AopF4Ngkby9431RsHQ41nta'
+        id: 'btc-taproot',
+        name: 'Bitcoin',
+        sublabel: 'Taproot (bc1p)',
+        address: 'bc1pezlxc3ngfp4drvpjhzc3m8c6fl7aegz73zhkawkgfjl8ezry4kksvlmy6l',
+        uri: 'bitcoin:bc1pezlxc3ngfp4drvpjhzc3m8c6fl7aegz73zhkawkgfjl8ezry4kksvlmy6l'
+      },
+      {
+        id: 'btc-native',
+        name: 'Bitcoin',
+        sublabel: 'Native SegWit (bc1q)',
+        address: 'bc1qw4v8hgjye9fxueppjksert26vlsn6g78dstmzz',
+        uri: 'bitcoin:bc1qw4v8hgjye9fxueppjksert26vlsn6g78dstmzz'
       }
     ];
 
-    /* --- texts per language (used by labels / copy messages) --- */
+    /* Localised UI strings */
     const texts = {
       en: {
         title: "Buy me a Bitcoffee",
         subtitle: "Fuel my coding sessions with crypto ☕",
         devMessage: "Supporting open source development",
-        thanksMessage: "Every satoshi (or token) helps keep the code flowing!",
+        thanksMessage: "Every satoshi helps keep the code flowing!",
         copied: "Copied! ☕",
         openWallet: "⚡ Open in Wallet",
-        openSponsor: "❤️ Sponsor on GitHub"
+        openSponsor: "❤️ Sponsor on GitHub",
+        addressLabel: "Address",
+        clickToCopy: "Click address to copy"
       },
       fr: {
         title: "Offrez-moi un Bitcoffee",
         subtitle: "Alimentez mes sessions de code avec de la crypto ☕",
         devMessage: "Soutenir le développement open source",
-        thanksMessage: "Chaque satoshi (ou token) aide à faire couler le code !",
+        thanksMessage: "Chaque satoshi aide à faire couler le code !",
         copied: "Copié ! ☕",
         openWallet: "⚡ Ouvrir dans le Wallet",
-        openSponsor: "❤️ Sponsoriser sur GitHub"
+        openSponsor: "❤️ Sponsoriser sur GitHub",
+        addressLabel: "Adresse",
+        clickToCopy: "Cliquer pour copier"
       },
       es: {
-        title:"Cómprame un Bitcoffee",
-        subtitle:"Alimenta mis sesiones de código con crypto ☕",
-        devMessage:"Apoyando el desarrollo de código abierto",
-        thanksMessage:"¡Cada satoshi (o token) ayuda!",
-        copied:"¡Copiado! ☕",
-        openWallet:"⚡ Abrir en Wallet",
-        openSponsor:"❤️ Patrocinar en GitHub"
+        title: "Cómprame un Bitcoffee",
+        subtitle: "Alimenta mis sesiones de código con crypto ☕",
+        devMessage: "Apoyando el desarrollo de código abierto",
+        thanksMessage: "¡Cada satoshi ayuda!",
+        copied: "¡Copiado! ☕",
+        openWallet: "⚡ Abrir en Wallet",
+        openSponsor: "❤️ Patrocinar en GitHub",
+        addressLabel: "Dirección",
+        clickToCopy: "Clic para copiar"
       },
       de: {
-        title:"Kauf mir einen Bitcoffee",
-        subtitle:"Füttere meine Coding-Sessions mit Crypto ☕",
-        devMessage:"Open-Source-Entwicklung unterstützen",
-        thanksMessage:"Jeder Satoshi (oder Token) hilft!",
-        copied:"Kopiert! ☕",
-        openWallet:"⚡ Im Wallet öffnen",
-        openSponsor:"❤️ Auf GitHub sponsern"
+        title: "Kauf mir einen Bitcoffee",
+        subtitle: "Füttere meine Coding-Sessions mit Crypto ☕",
+        devMessage: "Open-Source-Entwicklung unterstützen",
+        thanksMessage: "Jeder Satoshi hilft!",
+        copied: "Kopiert! ☕",
+        openWallet: "⚡ Im Wallet öffnen",
+        openSponsor: "❤️ Auf GitHub sponsern",
+        addressLabel: "Adresse",
+        clickToCopy: "Zum Kopieren klicken"
       },
       it: {
-        title:"Comprami un Bitcoffee",
-        subtitle:"Alimenta le mie sessioni di coding con crypto ☕",
-        devMessage:"Supportare lo sviluppo open source",
-        thanksMessage:"Ogni satoshi (o token) aiuta!",
-        copied:"Copiato! ☕",
-        openWallet:"⚡ Apri nel Wallet",
-        openSponsor:"❤️ Sponsorizza su GitHub"
+        title: "Comprami un Bitcoffee",
+        subtitle: "Alimenta le mie sessioni di coding con crypto ☕",
+        devMessage: "Supportare lo sviluppo open source",
+        thanksMessage: "Ogni satoshi aiuta!",
+        copied: "Copiato! ☕",
+        openWallet: "⚡ Apri nel Wallet",
+        openSponsor: "❤️ Sponsorizza su GitHub",
+        addressLabel: "Indirizzo",
+        clickToCopy: "Clicca per copiare"
       },
       pt: {
-        title:"Me compre um Bitcoffee",
-        subtitle:"Alimente minhas sessões de código com crypto ☕",
-        devMessage:"Apoiando o desenvolvimento open source",
-        thanksMessage:"Cada satoshi (ou token) ajuda!",
-        copied:"Copiado! ☕",
-        openWallet:"⚡ Abrir na Wallet",
-        openSponsor:"❤️ Patrocinar no GitHub"
+        title: "Me compre um Bitcoffee",
+        subtitle: "Alimente minhas sessões de código com crypto ☕",
+        devMessage: "Apoiando o desenvolvimento open source",
+        thanksMessage: "Cada satoshi ajuda!",
+        copied: "Copiado! ☕",
+        openWallet: "⚡ Abrir na Wallet",
+        openSponsor: "❤️ Patrocinar no GitHub",
+        addressLabel: "Endereço",
+        clickToCopy: "Clique para copiar"
       }
     };
 
@@ -406,109 +483,119 @@
     const lang = detectLang();
 
     /* DOM refs */
-    const titleEl = document.getElementById('title');
-    const subtitleEl = document.getElementById('subtitle');
-    const devMsgEl = document.getElementById('dev-message');
-    const thanksEl = document.getElementById('thanks-message');
-    const uriEl = document.getElementById('uri');
-    const qrcodeEl = document.getElementById('qrcode');
-    const methodBadgeEl = document.getElementById('methodBadge');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const walletBtn = document.getElementById('walletBtn');
+    const titleEl        = document.getElementById('title');
+    const subtitleEl     = document.getElementById('subtitle');
+    const devMsgEl       = document.getElementById('dev-message');
+    const thanksEl       = document.getElementById('thanks-message');
+    const uriEl          = document.getElementById('uri');
+    const uriLabelEl     = document.getElementById('uriLabel');
+    const copyHintEl     = document.getElementById('copyHint');
+    const qrcodeEl       = document.getElementById('qrcode');
+    const methodBadgeEl  = document.getElementById('methodBadge');
+    const methodNameEl   = document.getElementById('methodName');
+    const methodSublabelEl = document.getElementById('methodSublabel');
+    const stepDotsEl     = document.getElementById('stepDots');
+    const prevBtn        = document.getElementById('prevBtn');
+    const nextBtn        = document.getElementById('nextBtn');
+    const walletBtn      = document.getElementById('walletBtn');
 
     /* state */
     let currentIndex = 0;
     let _badgeTimeout = null;
     let _prevBadgeId = null;
 
-    /* apply localized texts */
-    titleEl.textContent = texts[lang].title;
+    /* apply localized static texts */
+    titleEl.textContent    = texts[lang].title;
     subtitleEl.textContent = texts[lang].subtitle;
-    devMsgEl.textContent = texts[lang].devMessage;
-    thanksEl.textContent = texts[lang].thanksMessage;
-    walletBtn.textContent = texts[lang].openWallet;
+    devMsgEl.textContent   = texts[lang].devMessage;
+    thanksEl.textContent   = texts[lang].thanksMessage;
+    walletBtn.textContent  = texts[lang].openWallet;
+    copyHintEl.textContent = texts[lang].clickToCopy;
 
-    /* helper: return SVG string for each method id */
+    /* build step dots */
+    function buildDots() {
+      stepDotsEl.innerHTML = '';
+      paymentMethods.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'step-dot' + (i === currentIndex ? ' active' : '');
+        dot.addEventListener('click', () => { currentIndex = i; updateMethodUI(); });
+        stepDotsEl.appendChild(dot);
+      });
+    }
+    function updateDots() {
+      Array.from(stepDotsEl.children).forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    /* icon SVG per method id */
     function getIconSVG(id) {
-      if (id === 'btc') {
-        return `
-          <img src="bitcoin.svg" alt="Bitcoin" width="24" height="24">
-        `;
-      } else if (id === 'eth') {
-        return `
-          <img src="ethereum.webp" alt="Ethereum" width="24" height="24">
-        `;
-      } else if (id === 'sol') {
-        return `
-          <img src="solana.webp" alt="Solana" width="24" height="24">
-        `;
-      } else if (id === 'ln') {
-        return `
-        <img src="lightning.svg" alt="Lightning Network" width="40" height="40">
-        `;
-      } else if (id === 'sponsor') {
-        return `
-        <img src="donate-fiat-icon.svg" alt="Github Sponsor" width="40" height="40">
-        `;
+      if (id === 'btc-silent' || id === 'btc-taproot' || id === 'btc-native') {
+        return `<img src="bitcoin.svg" alt="Bitcoin" width="24" height="24">`;
+      }
+      if (id === 'ln') {
+        return `<img src="lightning.svg" alt="Lightning Network" width="40" height="40">`;
+      }
+      if (id === 'sponsor') {
+        return `<img src="donate-fiat-icon.svg" alt="Github Sponsor" width="40" height="40">`;
       }
       return '';
     }
 
-    /* safe-get method */
     function currentMethod() {
       return paymentMethods[currentIndex] || paymentMethods[0];
     }
 
-    /* update badge with fade animation */
+    /* animated badge swap */
     function setBadgeWithFade(id, name) {
-      // clear any pending timeout
-      if (_badgeTimeout) {
-        clearTimeout(_badgeTimeout);
-        _badgeTimeout = null;
-      }
-
+      if (_badgeTimeout) { clearTimeout(_badgeTimeout); _badgeTimeout = null; }
       const svg = getIconSVG(id) || '';
-      // if same id as previous, update immediately (no animation)
       if (_prevBadgeId === id) {
         methodBadgeEl.innerHTML = svg;
         methodBadgeEl.setAttribute('aria-label', name);
         return;
       }
-
-      // animate fade out
       methodBadgeEl.classList.add('fading');
-
-      // after the fade out duration, replace content and fade in
       _badgeTimeout = setTimeout(() => {
         methodBadgeEl.innerHTML = svg;
         methodBadgeEl.setAttribute('aria-label', name);
-        // remove fading to allow fade-in (transition)
         methodBadgeEl.classList.remove('fading');
         _prevBadgeId = id;
         _badgeTimeout = null;
-      }, 200); // slightly longer than CSS (180ms) to be safe
+      }, 200);
     }
 
-    /* update UI for selected method */
+    /* animated name/sublabel swap */
+    function setTextWithFade(el, newText) {
+      el.classList.add('fading');
+      setTimeout(() => {
+        el.textContent = newText;
+        el.classList.remove('fading');
+      }, 180);
+    }
+
+    /* update full UI for the current method */
     function updateMethodUI() {
       const m = currentMethod();
-      // set badge (with animation)
+
       setBadgeWithFade(m.id, m.name);
-      // show the URI (for copy)
-      uriEl.textContent = m.uri;
+      setTextWithFade(methodNameEl, m.name);
+      setTextWithFade(methodSublabelEl, m.sublabel || '');
+
+      uriLabelEl.textContent = texts[lang].addressLabel;
+      uriEl.textContent = m.address;
       uriEl.setAttribute('data-uri', m.uri);
-      // regenerate QR with the current URI
+
       generateLocalQR(m.uri);
-      // make wallet button open current uri
+
       walletBtn.setAttribute('data-uri', m.uri);
-      // adapt button label to the active method
       walletBtn.textContent = (m.id === 'sponsor') ? texts[lang].openSponsor : texts[lang].openWallet;
+
+      updateDots();
     }
 
-    /* QR generation (uses qrcode.js createDataURL) */
+    /* QR generation */
     function generateLocalQR(uri) {
-      // if uri missing, clear
       if (!uri) { qrcodeEl.innerHTML = ''; return; }
       try {
         const qr = qrcode(0, 'M');
@@ -522,7 +609,7 @@
       }
     }
 
-    /* cycling functions */
+    /* navigation */
     function nextMethod() {
       currentIndex = (currentIndex + 1) % paymentMethods.length;
       updateMethodUI();
@@ -532,52 +619,45 @@
       updateMethodUI();
     }
 
-    /* attach listeners */
-    document.getElementById('prevBtn').addEventListener('click', prevMethod);
-    document.getElementById('nextBtn').addEventListener('click', nextMethod);
+    prevBtn.addEventListener('click', prevMethod);
+    nextBtn.addEventListener('click', nextMethod);
 
-    // keyboard support: left / right
-    document.addEventListener('keydown', function(e){
-      if (e.key === 'ArrowLeft') prevMethod();
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft')  prevMethod();
       if (e.key === 'ArrowRight') nextMethod();
     });
 
-    // copy URI to clipboard
-    uriEl.addEventListener('click', function(){
-      const uri = this.getAttribute('data-uri') || this.textContent || '';
-      if (!uri) return;
-      navigator.clipboard.writeText(uri).then(() => {
+    /* copy address on click */
+    uriEl.addEventListener('click', function() {
+      const address = currentMethod().address || '';
+      if (!address) return;
+      navigator.clipboard.writeText(address).then(() => {
         const prev = this.textContent;
         this.textContent = texts[lang].copied;
-        this.style.background = '#222';
-        setTimeout(()=>{ this.textContent = prev; this.style.background = '#222'; }, 2000);
-      }).catch(()=> {
-        // fallback: temporarily replace text
+        setTimeout(() => { this.textContent = prev; }, 2000);
+      }).catch(() => {
         const prev = this.textContent;
         this.textContent = texts[lang].copied;
-        setTimeout(()=> this.textContent = prev, 2000);
+        setTimeout(() => { this.textContent = prev; }, 2000);
       });
     });
 
-    // open in wallet (navigate to the URI)
-    document.getElementById('walletBtn').addEventListener('click', function(e){
+    /* open in wallet */
+    walletBtn.addEventListener('click', function(e) {
       e.preventDefault();
       const uri = this.getAttribute('data-uri') || (currentMethod() && currentMethod().uri);
-      if (!uri) return;
-      // Use location.href to trigger wallet apps; some browsers may block depending on scheme
-      window.location.href = uri;
+      if (uri) window.location.href = uri;
     });
 
-    // init UI
+    /* init */
+    buildDots();
     updateMethodUI();
 
-    // regenerate on bfcache restore
-    window.addEventListener('pageshow', function(event){
-      if(event.persisted) updateMethodUI();
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted) updateMethodUI();
     });
 
-    // Expose a tiny helper for other devs who want to change the methods at runtime:
-    window.__donation_setIndex = function(i){
+    window.__donation_setIndex = function(i) {
       if (typeof i === 'number' && i >= 0 && i < paymentMethods.length) {
         currentIndex = i;
         updateMethodUI();
