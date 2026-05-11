@@ -325,9 +325,9 @@
       <!-- QR + switcher -->
       <div class="qr-area" id="qrArea">
         <div class="switcher" aria-hidden="false">
-          <div class="arrow" id="prevBtn" title="Previous method" role="button" aria-label="Previous method">‹</div>
+          <div class="arrow" id="prevBtn" title="Previous method" role="button" tabindex="0" aria-label="Previous method">‹</div>
           <div class="method-badge" id="methodBadge" aria-live="polite" aria-label="Payment method icon"></div>
-          <div class="arrow" id="nextBtn" title="Next method" role="button" aria-label="Next method">›</div>
+          <div class="arrow" id="nextBtn" title="Next method" role="button" tabindex="0" aria-label="Next method">›</div>
         </div>
 
         <div id="qrcode" aria-hidden="false"></div>
@@ -518,7 +518,12 @@
       paymentMethods.forEach((_, i) => {
         const dot = document.createElement('div');
         dot.className = 'step-dot' + (i === currentIndex ? ' active' : '');
-        dot.addEventListener('click', () => { currentIndex = i; updateMethodUI(); });
+        dot.setAttribute('tabindex', '0');
+        dot.setAttribute('role', 'button');
+        dot.setAttribute('aria-label', `Payment method ${i + 1}`);
+        const activate = () => { currentIndex = i; updateMethodUI(); };
+        dot.addEventListener('click', activate);
+        dot.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); } });
         stepDotsEl.appendChild(dot);
       });
     }
@@ -528,18 +533,21 @@
       });
     }
 
-    /* icon SVG per method id */
-    function getIconSVG(id) {
-      if (id === 'btc-silent' || id === 'btc-taproot' || id === 'btc-native') {
-        return `<img src="bitcoin.svg" alt="Bitcoin" width="24" height="24">`;
-      }
-      if (id === 'ln') {
-        return `<img src="lightning.svg" alt="Lightning Network" width="40" height="40">`;
-      }
-      if (id === 'sponsor') {
-        return `<img src="donate-fiat-icon.svg" alt="Github Sponsor" width="40" height="40">`;
-      }
-      return '';
+    /* icon element per method id — returns a DOM node, never raw HTML */
+    function getIconElement(id) {
+      const map = {
+        'btc-silent':  { src: 'bitcoin.svg',          alt: 'Bitcoin',          size: 24 },
+        'btc-taproot': { src: 'bitcoin.svg',          alt: 'Bitcoin',          size: 24 },
+        'btc-native':  { src: 'bitcoin.svg',          alt: 'Bitcoin',          size: 24 },
+        'ln':          { src: 'lightning.svg',        alt: 'Lightning Network', size: 40 },
+        'sponsor':     { src: 'donate-fiat-icon.svg', alt: 'Github Sponsor',   size: 40 }
+      };
+      const cfg = map[id];
+      if (!cfg) return null;
+      const img = new Image(cfg.size, cfg.size);
+      img.src = cfg.src;
+      img.alt = cfg.alt;
+      return img;
     }
 
     function currentMethod() {
@@ -549,16 +557,18 @@
     /* animated badge swap */
     function setBadgeWithFade(id, name) {
       if (_badgeTimeout) { clearTimeout(_badgeTimeout); _badgeTimeout = null; }
-      const svg = getIconSVG(id) || '';
-      if (_prevBadgeId === id) {
-        methodBadgeEl.innerHTML = svg;
+
+      function applyIcon() {
+        methodBadgeEl.innerHTML = '';
+        const el = getIconElement(id);
+        if (el) methodBadgeEl.appendChild(el);
         methodBadgeEl.setAttribute('aria-label', name);
-        return;
       }
+
+      if (_prevBadgeId === id) { applyIcon(); return; }
       methodBadgeEl.classList.add('fading');
       _badgeTimeout = setTimeout(() => {
-        methodBadgeEl.innerHTML = svg;
-        methodBadgeEl.setAttribute('aria-label', name);
+        applyIcon();
         methodBadgeEl.classList.remove('fading');
         _prevBadgeId = id;
         _badgeTimeout = null;
@@ -584,11 +594,9 @@
 
       uriLabelEl.textContent = texts[lang].addressLabel;
       uriEl.textContent = m.address;
-      uriEl.setAttribute('data-uri', m.uri);
 
       generateLocalQR(m.uri);
 
-      walletBtn.setAttribute('data-uri', m.uri);
       walletBtn.textContent = (m.id === 'sponsor') ? texts[lang].openSponsor : texts[lang].openWallet;
 
       updateDots();
@@ -602,10 +610,18 @@
         qr.addData(uri);
         qr.make();
         const qrImg = qr.createDataURL(6, 12);
-        qrcodeEl.innerHTML = `<img src="${qrImg}" alt="Payment QR Code for ${currentMethod().name}">`;
+        const img = new Image();
+        img.src = qrImg;
+        img.alt = 'Payment QR Code for ' + currentMethod().name;
+        qrcodeEl.innerHTML = '';
+        qrcodeEl.appendChild(img);
       } catch (e) {
         console.error('QR generation failed', e);
-        qrcodeEl.innerHTML = `<div style="color:red;">QR generation error</div>`;
+        const errMsg = document.createElement('div');
+        errMsg.style.color = 'red';
+        errMsg.textContent = 'QR generation error';
+        qrcodeEl.innerHTML = '';
+        qrcodeEl.appendChild(errMsg);
       }
     }
 
@@ -621,6 +637,8 @@
 
     prevBtn.addEventListener('click', prevMethod);
     nextBtn.addEventListener('click', nextMethod);
+    prevBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); prevMethod(); } });
+    nextBtn.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); nextMethod(); } });
 
     document.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowLeft')  prevMethod();
@@ -635,18 +653,24 @@
         const prev = this.textContent;
         this.textContent = texts[lang].copied;
         setTimeout(() => { this.textContent = prev; }, 2000);
-      }).catch(() => {
-        const prev = this.textContent;
-        this.textContent = texts[lang].copied;
-        setTimeout(() => { this.textContent = prev; }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy address:', err);
       });
     });
 
     /* open in wallet */
     walletBtn.addEventListener('click', function(e) {
       e.preventDefault();
-      const uri = this.getAttribute('data-uri') || (currentMethod() && currentMethod().uri);
-      if (uri) window.location.href = uri;
+      const m = currentMethod();
+      if (!m || !m.uri) return;
+      const uri = m.uri;
+      const allowed = ['https:', 'http:', 'bitcoin:', 'lightning:'];
+      if (!allowed.some(s => uri.startsWith(s))) return;
+      if (uri.startsWith('http')) {
+        window.open(uri, '_blank', 'noopener,noreferrer');
+      } else {
+        window.location.href = uri;
+      }
     });
 
     /* init */
