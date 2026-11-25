@@ -6,31 +6,32 @@
 
 ---
 
-# Bitcoffee Donation Page
+# Fuel the code — Donation Page
 
-A simple, stylish, **Bitcoin donation page** built with HTML, CSS, and JavaScript.
-Designed for developers and open-source enthusiasts to receive donations via Bitcoin.
+A single-file donation page with a **One Dark IDE** ambience and an **iOS-style** card.
+Accepts GitHub Sponsors, Bitcoin (Lightning, Silent Payments, on-chain), Monero and Zcash.
 
-![Preview](donate/demonstration.gif)
+![Preview](donate/preview.png)
 
 ---
 
 ## Live Demo
 
-Check out a working version here:
 [https://html-preview.github.io/?url=https://github.com/SKOHscripts/donate.github.io/blob/main/donate%2Fredirect.html](https://html-preview.github.io/?url=https://github.com/SKOHscripts/donate.github.io/blob/main/donate%2Fredirect.html)
 
 ---
 
 ## Features
 
-* Stylish orange-dark “dev” theme
-* Coffee ☕ + Bitcoin ₿ icons with glowing effect
-* QR code generated locally (no external trackers)
+* One Dark background with abstract code lines scrolling slowly (shapes only, no readable text; static when *reduced motion* is enabled)
+* Frosted-glass card with iOS segmented controls: **Sponsor · Bitcoin · Monero · Zcash**
+* Bitcoin sub-options: **Lightning**, **Silent Payments** (BIP-352) and **On-chain** (Native SegWit)
+* QR codes generated locally (`qrcode.js`, no external requests or trackers)
+* Tap the address to copy it (first and last characters highlighted for checking)
+* "Open in wallet" button using `lightning:`, `bitcoin:`, `monero:` and `zcash:` URIs
+* Deep links: `redirect.html#lightning`, `#silent`, `#onchain`, `#monero`, `#zcash`, `#sponsor`
+* Keyboard (← →) and swipe navigation
 * Automatic language detection (EN, FR, ES, DE, IT, PT)
-* Click-to-copy Bitcoin URI
-* Buttons to open wallet, Bitcoin.org, and Lightning Network
-* Fully responsive and scrollable on small screens
 
 ---
 
@@ -39,32 +40,24 @@ Check out a working version here:
 1. **Clone the repository**:
 
 ```bash
-git clone https://your-username.github.io/your-repo
-cd your-repo
+git clone https://github.com/SKOHscripts/donate.github.io
+cd donate.github.io
 ```
 
-2. **Edit the Bitcoin URI** in `index.html`:
+2. **Edit the `METHODS` array** at the top of the script in `donate/redirect.html`:
 
 ```javascript
-const texts = {
-  uri: "bitcoin:?lno=YOUR_OWN_BITCOIN_ADDRESS_HERE",
-  en: { title: "...", subtitle: "...", devMessage: "...", thanksMessage: "...", copied: "Copied! ☕" },
-  // other languages...
-};
+const METHODS = [
+  { id: 'sponsor',   group: 'sponsor', label: 'GitHub Sponsors', address: 'github.com/sponsors/YOU', uri: 'https://github.com/sponsors/YOU' },
+  { id: 'lightning', group: 'bitcoin', label: 'Lightning',       address: 'you@wallet.tld',         uri: 'lightning:you@wallet.tld' },
+  { id: 'monero',    group: 'monero',  label: 'Monero',          address: '8…',                     uri: 'monero:8…' },
+  // …
+];
 ```
 
-Replace `"YOUR_OWN_BITCOIN_ADDRESS_HERE"` with your own Bitcoin address or LNURL.
+Texts for each method (tag and note) live in the `I18N` object, keyed by the method `id`.
 
-3. **Deploy to GitHub Pages**:
-
-* Go to your repository → Settings → Pages → Select `main` branch and `/root` folder → Save.
-* Wait a few minutes. Your donation page will be available at:
-
-```
-https://your-username.github.io/your-repo
-```
-
-4. **Optional**: Update the README screenshot to reflect your own page.
+3. **Deploy to GitHub Pages**: Settings → Pages → select the `main` branch and `/root` folder → Save.
 
 ---
 
